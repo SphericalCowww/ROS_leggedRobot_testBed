@@ -11,7 +11,7 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
     sudo raspi-config 	                #Navigate to Interfacing Options > I2C, and enable it.
     reboot
     sudo apt-get install -y i2c-tools python3-smbus
-    sudo i2cdetect -y 1
+    i2cdetect -y 1
     sudo adduser $USER i2c
     sudo apt-get install build-essential python3 python3-dev python3-venv python3-pip
     python3 -m venv pythonEnv
