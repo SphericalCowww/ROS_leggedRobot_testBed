@@ -22,3 +22,7 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
         pip install adafruit-circuitpython-servokit adafruit-circuitpython-pca9685 Adafruit-Blinka adafruit-circuitpython-register adafruit-circuitpython-busdevice
     deactivate
 
+
+## References:
+- FoamyGuy, "Adafruit_CircuitPython_PCA9685" (<a href="https://github.com/adafruit/Adafruit_CircuitPython_PCA9685">GitHub</a>)
+- how2flow, "ros2_axis6" (<a href="https://github.com/how2flow/ros2_axis6">GitHub</a>)
