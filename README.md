@@ -31,6 +31,13 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
     ros2 topic list
     ros2 topic echo /serial_lifecycle_receiver
 
+    ros2 topic echo /tf
+    ros2 run tf2_tools view_frames
+    ros2 run tf2_ros tf2_echo base_link horizontal_arm
+
+From ChatGPT: For flat-surface walking, implementing a predefined gait pattern is sufficient. A common choice is the crawl gait, where three legs remain on the ground while one moves, providing continuous stability. This approach doesn't require real-time feedback or advanced control algorithms. RobotShop Community
+You can program these gait patterns using simple loops and timing functions in the Arduino IDE. Libraries like Servo.h facilitate easy control of servo positions.
+
 
 ## References:
 - FoamyGuy, "Adafruit_CircuitPython_PCA9685" (<a href="https://github.com/adafruit/Adafruit_CircuitPython_PCA9685">GitHub</a>)
