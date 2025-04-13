@@ -14,23 +14,15 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
     i2cdetect -y 1
     sudo adduser $USER i2c
     sudo apt-get install build-essential python3 python3-dev python3-venv python3-pip
-    python3 -m venv pythonEnv
-    source pythonEnv/bin/activate
-        pip install --upgrade pip
-        pip install lgpio
-        pip install adafruit-python-shell click wheel 
-        pip install adafruit-circuitpython-servokit adafruit-circuitpython-pca9685 Adafruit-Blinka adafruit-circuitpython-register adafruit-circuitpython-busdevice
-    deactivate
+    sudo apt install python3-lgpio
+    pip install --break-system-packages adafruit-python-shell click wheel 
+    pip install --break-system-packages adafruit-circuitpython-servokit adafruit-circuitpython-pca9685 Adafruit-Blinka adafruit-circuitpython-register adafruit-circuitpython-busdevice
 
-
-    source pythonEnv/bin/activate
     ros2 pkg create robot_interfaces
     ros2 pkg create robot_descriptions
     ros2 pkg create robot_scripts --build-type ament_python --dependencies rclpy board adafruit_motor adafruit_pca9685
     colcon build --symlink-install
     source install/setup.bash
-
-    sudo usermod -aG i2c $USER
 
     ros2 run robot_scripts robot_lifecycle 
     ros2 lifecycle nodes
@@ -38,10 +30,6 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
     ros2 lifecycle set /serial_lifecycleNode activate
     ros2 topic list
     ros2 topic echo /serial_lifecycle_receiver
-
-    sudo rosdep init
-    rosdep update
-    rosdep install --from-paths src --ignore-src -r -y
 
 
 ## References:
