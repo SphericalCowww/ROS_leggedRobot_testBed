@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import time
 import threading
 import numpy as np
@@ -13,7 +12,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 from example_interfaces.msg import String
 
-#import board
+import board
 from adafruit_motor import servo
 from adafruit_pca9685 import PCA9685
 
@@ -33,6 +32,7 @@ class robot_lifecycleNode(LifecycleNode):
     def on_configure(self, statePre: LifecycleState) -> TransitionCallbackReturn: 
         self.i2c_ = board.I2C()
         self.pca_ = PCA9685(self.i2c_)
+        self.pca_.frequency = self.pca_frequency_
         for servoIdx in range(self.servoN_):
             self.servos_.append(servo.Servo(self.pca_.channels[servoIdx]))
         self.timer_ = self.create_timer(self.timer_frequency_, self.timerCallback)
@@ -65,7 +65,6 @@ class robot_lifecycleNode(LifecycleNode):
     def timerCallback(self):
         if self.activated == False: return
         self.get_logger().info("timerCallback(): move servo 0")
-
         servoIdx = 0
         for angle in range(180):
             self.servos_[0].angle = angle
@@ -73,12 +72,13 @@ class robot_lifecycleNode(LifecycleNode):
         for angle in range(180):
             self.servos_[0].angle = 180 - angle
             time.sleep(0.03)
+
 #######################################################################################################################
 def main(args=None):
     rclpy.init(args=args)
     node = robot_lifecycleNode()
-    #node.trigger_configure()
-    #node.trigger_activate()
+    node.trigger_configure()
+    node.trigger_activate()
     executor = MultiThreadedExecutor()
     executor.add_node(node)
     try:
