@@ -38,6 +38,14 @@ https://www.youtube.com/watch?v=-x2EEIUMm6A
 From ChatGPT: For flat-surface walking, implementing a predefined gait pattern is sufficient. A common choice is the crawl gait, where three legs remain on the ground while one moves, providing continuous stability. This approach doesn't require real-time feedback or advanced control algorithms. RobotShop Community
 You can program these gait patterns using simple loops and timing functions in the Arduino IDE. Libraries like Servo.h facilitate easy control of servo positions.
 
+## DYNAMIXEL Connections
+
+### basic connection
+
+From <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/basicConnection_DYNAMIXEL.png" width="200">
+
 
 ## References:
 - FoamyGuy, "Adafruit_CircuitPython_PCA9685" (<a href="https://github.com/adafruit/Adafruit_CircuitPython_PCA9685">GitHub</a>)
