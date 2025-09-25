@@ -1,44 +1,13 @@
 # Testing for Legged Robot using ROS2
 
-Using PCA9685 controller on DM996R servo
+## Hardware Connections
 
-https://github.com/how2flow/ros2_axis6 => https://www.how2flow.net/posts/pca9685/, https://docs.circuitpython.org/projects/servokit/en/latest/
-https://www.youtube.com/watch?v=-x2EEIUMm6A
-
-    sudo apt update
-    sudo apt upgrade
-    sudo apt-get install raspi-config
-    sudo raspi-config 	                #Navigate to Interfacing Options > I2C, and enable it.
-    reboot
-    sudo apt-get install -y i2c-tools python3-smbus
-    i2cdetect -y 1
-    sudo adduser $USER i2c
-    sudo apt-get install build-essential python3 python3-dev python3-venv python3-pip
-    sudo apt install python3-lgpio
-    pip install --break-system-packages adafruit-python-shell click wheel 
-    pip install --break-system-packages adafruit-circuitpython-servokit adafruit-circuitpython-pca9685 Adafruit-Blinka adafruit-circuitpython-register adafruit-circuitpython-busdevice
-
-    ros2 pkg create robot_interfaces
-    ros2 pkg create robot_descriptions
-    ros2 pkg create robot_scripts --build-type ament_python --dependencies rclpy board adafruit_motor adafruit_pca9685
-    colcon build --symlink-install
-    source install/setup.bash
-
-    ros2 run robot_scripts robot_lifecycle 
-    ros2 lifecycle nodes
-    ros2 lifecycle set /serial_lifecycleNode configure
-    ros2 lifecycle set /serial_lifecycleNode activate
-    ros2 topic list
-    ros2 topic echo /serial_lifecycle_receiver
-
-    ros2 topic echo /tf
-    ros2 run tf2_tools view_frames
-    ros2 run tf2_ros tf2_echo base_link horizontal_arm
-
-From ChatGPT: For flat-surface walking, implementing a predefined gait pattern is sufficient. A common choice is the crawl gait, where three legs remain on the ground while one moves, providing continuous stability. This approach doesn't require real-time feedback or advanced control algorithms. RobotShop Community
-You can program these gait patterns using simple loops and timing functions in the Arduino IDE. Libraries like Servo.h facilitate easy control of servo positions.
-
-## DYNAMIXEL Connections
+| device | DYNAMIXEL models | number |
+| - | - | - |
+| controller | OpenCR 1.0 | 1 |
+| power hub | U2D2 | ? |
+| power supply | SMPS 12V 5A | 1 |
+| servo motor | XL430-W250-T | 12 | 
 
 ### basic connection
 
@@ -48,5 +17,4 @@ From <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
 
 
 ## References:
-- FoamyGuy, "Adafruit_CircuitPython_PCA9685" (<a href="https://github.com/adafruit/Adafruit_CircuitPython_PCA9685">GitHub</a>)
-- how2flow, "ros2_axis6" (<a href="https://github.com/how2flow/ros2_axis6">GitHub</a>)
+- ROBOTIS, "OpenCR 1.0 manual" (<a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">webpage</a>)
