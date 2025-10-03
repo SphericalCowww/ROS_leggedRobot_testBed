@@ -4,15 +4,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
-int main(int argc, char **argv) {
-    rclcpp::init(argc, argv);
-    auto node = std::make_shared<rclcpp::Node>("dynamixel_sweep_node");
-    RCLCPP_INFO(node->get_logger(), "Starting dynamixel servo sweep test.");
-
-    rclcpp::shutdown();
-    return 0;
-}
-
 // Control table address
 #define ADDR_GOAL_POSITION     116
 #define ADDR_PRESENT_POSITION  132
@@ -29,7 +20,11 @@ int main(int argc, char **argv) {
 #define SWEEP_STEP             100
 #define SWEEP_DELAY            1 // seconds
 
-int main() {
+int main(int argc, char **argv) {
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>("dynamixel_sweep_node");
+    RCLCPP_INFO(node->get_logger(), "Starting dynamixel servo sweep test.");
+
     // Initialize PortHandler and PacketHandler
     dynamixel::PortHandler *portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
     dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
@@ -71,6 +66,7 @@ int main() {
     // Close port
     portHandler->closePort();
 
+    rclcpp::shutdown();
     return 0;
 }
 
