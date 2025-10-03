@@ -16,10 +16,10 @@ find_package(pluginlib REQUIRED)
 include_directories(include)
 
 ###########################################################################
-add_executable(testRaspPi5_dynamixel_u2d2_channel0_xl430 src/testRaspPi5_dynamixel_u2d2_channel0_xl430.cpp)
-ament_target_dependencies(testRaspPi5_dynamixel_u2d2_channel0_xl430 rclcpp dynamixel_sdk)
+add_executable(testRaspPi5_dynamixel_opencr1_channel0_xl430 src/testRaspPi5_dynamixel_opencr1_channel0_xl430.cpp)
+ament_target_dependencies(testRaspPi5_dynamixel_opencr1_channel0_xl430 rclcpp dynamixel_sdk)
 
-install(TARGETS testRaspPi5_dynamixel_u2d2_channel0_xl430
+install(TARGETS testRaspPi5_dynamixel_opencr1_channel0_xl430
     DESTINATION lib/${PROJECT_NAME}
 )
 
