@@ -4,9 +4,9 @@
 
 | device | DYNAMIXEL models | number | specification |
 | - | - | - | - |
-| controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | |
-| USB interface + power hub | <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + power hub board | ? | |
-| power supply | SMPS | ? | 12V 5A | 
+| controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
+| USB interface + power hub | <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + power hub board | 1 | Can control 12 servo in daisy chain if properly powered |
+| power supply | SMPS | 4? | 12V 5A | 
 | servo motor | <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | max stall torque 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
 
 ### setting the servo IDs
@@ -52,15 +52,14 @@ Then ``cd ROS_leggedRobot_testBed`` and build,
     colcon build
     source install/setup.bash
 
-Connect OpenCR1.0 to Rasp Pi USB port: 
+Connect U2D2 to Rasp Pi USB port: 
 
     sudo dmesg | tail -n 20
     # look for:
-    ## usb 2-2: Product: OpenCR Virtual ComPort in FS Mode
-    ## usb 2-2: Manufacturer: ROBOTIS
-    ## cdc_acm 2-2:1.0: ttyACM0: USB ACM device
-    ls -l /dev/ttyACM*
-    sudo chmod a+rw /dev/ttyACM0
-    ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyACM0 57600
+    ## usb 2-2: Detected FT232H
+    ## usb 2-2: FTDI USB Serial Device converter now attached to ttyUSB0
+    ls -l /dev/ttyUSB*
+    sudo chmod a+rw /dev/ttyUSB0
+    ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
 
 ## References:
