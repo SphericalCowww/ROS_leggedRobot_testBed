@@ -15,7 +15,7 @@ Connecting servo to U2D2 according to <a href="https://www.youtube.com/watch?v=F
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/basicConnection_DYNAMIXEL.png" width="200">
 
-Use the following App <a href="https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/">DYNAMIXEL Wizard 2.0</a> to change the servo ID (default 1) to, say, ID 10. Note that all servos in use from the same controller must have different IDs (and they all start with ID 1 and so in collision):
+Use the following App <a href="https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/">DYNAMIXEL Wizard 2.0</a> to change the servo ID (default 1) to, say, ID 10. Note that if any of the servos have the same ID, they will NOT show up in the scan. The servos also all initially come with an ID of 1, so that must be connected one by one to U2D2 to change their IDs accordingly.
 
     connect U2D2 to computer => open DYNAMIXEL Wizard 2.0
     # Options 
