@@ -23,7 +23,7 @@ Use the following App <a href="https://emanual.robotis.com/docs/en/software/dyna
     ## Select port to scan => which ever port is connected
     ## Select baudrate to scan => 57600 bps (only) => OK
     # Scan
-    # 7 ID => 10 ID 10 (on the right) => Save (may need to scroll down) 
+    # 7 ID => 11 ID 11 (on the right) => Save (may need to scroll down) 
 
 Can also test out the servo:
 
@@ -61,5 +61,6 @@ Connect U2D2 to Rasp Pi USB port:
     ls -l /dev/ttyUSB*
     sudo chmod a+rw /dev/ttyUSB0                   # required everytime after reconnection
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
+    ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
 
 ## References:
