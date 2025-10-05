@@ -60,7 +60,7 @@ Connect OpenCR1.0 to Rasp Pi USB port:
     ## usb 2-2: Manufacturer: ROBOTIS
     ## cdc_acm 2-2:1.0: ttyACM0: USB ACM device
     ls -l /dev/ttyACM*
-    ros2 run my_toolbox_dynamixel_workbench monitor
-    ros2 run my_toolbox_dynamixel_workbench find_dynamixel /dev/ttyACM0 57600
+    sudo chmod a+rw /dev/ttyACM0
+    ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyACM0 57600
 
 ## References:
