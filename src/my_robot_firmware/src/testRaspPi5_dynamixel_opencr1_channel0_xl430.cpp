@@ -13,9 +13,10 @@
 #define DXL_ID3                13
 #define MIN_POSITION           0
 #define MAX_POSITION           4095
-#define SWEEP_STEP             300
-#define SWEEP_DELAY            1 // seconds
+#define SWEEP_STEP             400
+#define SWEEP_DELAY            500 // ms
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<rclcpp::Node>("dynamixel_sweep_node");
@@ -25,6 +26,9 @@ int main(int argc, char **argv) {
     uint16_t model_number = 0;
     const char *log;
     bool dxl_return = false;
+    int32_t dxl_position1 = 0;
+    int32_t dxl_position2 = 0; 
+    int32_t dxl_position3 = 0; 
 
     dxl_return = dxl_wb.init(PORTNAME, BAUDRATE, &log);
     if (dxl_return == false) {
@@ -63,9 +67,19 @@ int main(int argc, char **argv) {
         if (dxl_return == false) {
             RCLCPP_WARN(node->get_logger(), "Failed to set position: %i", position);
         } else {
-            RCLCPP_INFO(node->get_logger(), "Moving to position: %i", position);
+            RCLCPP_INFO(node->get_logger(), "Setting position: %i", position);
         }
-        rclcpp::sleep_for(std::chrono::milliseconds(500));  // Sleep for 0.5 seconds
+        rclcpp::sleep_for(std::chrono::milliseconds(SWEEP_DELAY/2));  
+
+        dxl_return = dxl_wb.itemRead(DXL_ID1, "Present_Position", &dxl_position1, &log);
+        dxl_wb.itemRead(DXL_ID2, "Present_Position", &dxl_position2, &log);
+        dxl_wb.itemRead(DXL_ID3, "Present_Position", &dxl_position3, &log);
+        if (dxl_return == false) {
+            RCLCPP_WARN(node->get_logger(), "Failed to read position!");
+        } else {
+            RCLCPP_INFO(node->get_logger(), "Reading positions: %i, %i, %i", dxl_position1, dxl_position2, dxl_position3);
+        }
+        rclcpp::sleep_for(std::chrono::milliseconds(SWEEP_DELAY/2));
     }
     // Sweep back from MAX_POSITION to MIN_POSITION
     for (int position = MAX_POSITION; position >= MIN_POSITION; position -= SWEEP_STEP) {
@@ -75,9 +89,19 @@ int main(int argc, char **argv) {
         if (dxl_return == false) {
             RCLCPP_WARN(node->get_logger(), "Failed to set position: %i", position);
         } else {
-            RCLCPP_INFO(node->get_logger(), "Moving to position: %i", position);
+            RCLCPP_INFO(node->get_logger(), "Setting position: %i", position);
         }
-        rclcpp::sleep_for(std::chrono::milliseconds(500));  // Sleep for 0.5 seconds
+        rclcpp::sleep_for(std::chrono::milliseconds(SWEEP_DELAY/2));
+
+        dxl_return = dxl_wb.itemRead(DXL_ID1, "Present_Position", &dxl_position1, &log);
+        dxl_wb.itemRead(DXL_ID2, "Present_Position", &dxl_position2, &log);
+        dxl_wb.itemRead(DXL_ID3, "Present_Position", &dxl_position3, &log);
+        if (dxl_return == false) {
+            RCLCPP_WARN(node->get_logger(), "Failed to read position!");
+        } else {
+            RCLCPP_INFO(node->get_logger(), "Reading positions: %i, %i, %i", dxl_position1, dxl_position2, dxl_position3);
+        }
+        rclcpp::sleep_for(std::chrono::milliseconds(SWEEP_DELAY/2));  // Sleep for 0.5 seconds
     }
     return 0;
 }
