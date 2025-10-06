@@ -3,21 +3,17 @@
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
+#include "dynamixel_workbench_toolbox/dynamixel_workbench.h"
 
-// Control table address
-#define ADDR_GOAL_POSITION     116
-#define ADDR_PRESENT_POSITION  132
-
-// Protocol version
-#define PROTOCOL_VERSION       2.0
-
-// Default setting
-#define DXL_ID                 1
+// Setting
+#define PORTNAME              "/dev/ttyUSB0"
 #define BAUDRATE               57600
-#define DEVICENAME             "/dev/ttyUSB0"
+#define DXL_ID1                11
+#define DXL_ID2                12
+#define DXL_ID3                13
 #define MIN_POSITION           0
 #define MAX_POSITION           4095
-#define SWEEP_STEP             100
+#define SWEEP_STEP             300
 #define SWEEP_DELAY            1 // seconds
 
 int main(int argc, char **argv) {
@@ -25,48 +21,64 @@ int main(int argc, char **argv) {
     auto node = std::make_shared<rclcpp::Node>("dynamixel_sweep_node");
     RCLCPP_INFO(node->get_logger(), "Starting dynamixel servo sweep test.");
 
-    // Initialize PortHandler and PacketHandler
-    dynamixel::PortHandler *portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
-    dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+    DynamixelWorkbench dxl_wb;
+    uint16_t model_number = 0;
+    const char *log;
+    bool dxl_return = false;
 
-    // Open port
-    if (!portHandler->openPort()) {
-        std::cerr << "Failed to open the port!" << std::endl;
+    dxl_return = dxl_wb.init(PORTNAME, BAUDRATE, &log);
+    if (dxl_return == false) {
+        RCLCPP_ERROR(node->get_logger(), "Failed to open the port!");
         return -1;
+    } else {
+        RCLCPP_INFO(node->get_logger(), "Initialize with baud rate: %d", BAUDRATE);     
     }
 
-    // Set port baudrate
-    if (!portHandler->setBaudRate(BAUDRATE)) {
-        std::cerr << "Failed to set the baudrate!" << std::endl;
+    dxl_return = dxl_wb.ping(DXL_ID1, &model_number, &log);
+    dxl_wb.ping(DXL_ID2, &model_number, &log);
+    dxl_wb.ping(DXL_ID3, &model_number, &log);
+    if (dxl_return == false) {
+        RCLCPP_ERROR(node->get_logger(), "Failed to ping!");
         return -1;
+    } else {
+        RCLCPP_INFO(node->get_logger(), "Pinging id: %d, model_number : %d\n", DXL_ID1, model_number);
+    } 
+
+    dxl_return = dxl_wb.jointMode(DXL_ID1, 0, 0, &log);
+    dxl_wb.jointMode(DXL_ID2, 0, 0, &log);
+    dxl_wb.jointMode(DXL_ID3, 0, 0, &log);
+    if (dxl_return == false) {
+        RCLCPP_ERROR(node->get_logger(), "Failed join position mode!");
+        return -1;
+    } else {
+        RCLCPP_INFO(node->get_logger(), "Joining position mode for id: %d, model_number : %d\n", DXL_ID1, model_number);
+        
     }
 
     // Sweep from MIN_POSITION to MAX_POSITION
     for (int position = MIN_POSITION; position <= MAX_POSITION; position += SWEEP_STEP) {
-        int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_ID, ADDR_GOAL_POSITION, position);
-        if (dxl_comm_result != COMM_SUCCESS) {
-            std::cerr << "Failed to set goal position!" << std::endl;
-            continue;
+        dxl_return = dxl_wb.goalPosition(DXL_ID1, (int32_t) position);
+        dxl_wb.goalPosition(DXL_ID2, (int32_t) position);
+        dxl_wb.goalPosition(DXL_ID3, (int32_t) position);
+        if (dxl_return == false) {
+            RCLCPP_WARN(node->get_logger(), "Failed to set position: %i", position);
+        } else {
+            RCLCPP_INFO(node->get_logger(), "Moving to position: %i", position);
         }
-        std::cout << "Moving to position: " << position << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(SWEEP_DELAY));
+        rclcpp::sleep_for(std::chrono::milliseconds(500));  // Sleep for 0.5 seconds
     }
-
     // Sweep back from MAX_POSITION to MIN_POSITION
     for (int position = MAX_POSITION; position >= MIN_POSITION; position -= SWEEP_STEP) {
-        int dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_ID, ADDR_GOAL_POSITION, position);
-        if (dxl_comm_result != COMM_SUCCESS) {
-            std::cerr << "Failed to set goal position!" << std::endl;
-            continue;
+        dxl_return = dxl_wb.goalPosition(DXL_ID1, (int32_t) position);
+        dxl_wb.goalPosition(DXL_ID2, (int32_t) position);
+        dxl_wb.goalPosition(DXL_ID3, (int32_t) position);
+        if (dxl_return == false) {
+            RCLCPP_WARN(node->get_logger(), "Failed to set position: %i", position);
+        } else {
+            RCLCPP_INFO(node->get_logger(), "Moving to position: %i", position);
         }
-        std::cout << "Moving to position: " << position << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(SWEEP_DELAY));
+        rclcpp::sleep_for(std::chrono::milliseconds(500));  // Sleep for 0.5 seconds
     }
-
-    // Close port
-    portHandler->closePort();
-
-    rclcpp::shutdown();
     return 0;
 }
 
