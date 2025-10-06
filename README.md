@@ -63,4 +63,12 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
     ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
 
+### testing the driver in ros
+
+    colcon build
+    source install/setup.bash
+    sudo chmod a+rw /dev/ttyUSB0                   
+    ros2 run my_robot_firmware testRaspPi5_dynamixel_opencr1_channel0_xl430 
+    ps -ef | grep testRaspPi5_dynamixel_opencr1_channel0_xl430                 # to kill it before it ends
+
 ## References:
