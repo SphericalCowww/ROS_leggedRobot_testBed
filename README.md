@@ -71,4 +71,12 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 run my_robot_firmware testRaspPi5_dynamixel_opencr1_channel0_xl430 
     ps -ef | grep testRaspPi5_dynamixel_opencr1_channel0_xl430                 # to kill it before it ends
 
+### testing moveit with Gazebo
+
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup ma_robot.gazebo.launch.with_commander.py
+    ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
+
+
 ## References:
