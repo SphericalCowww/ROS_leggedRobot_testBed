@@ -30,6 +30,8 @@ Can also test out the servo:
     # LED (top right toggle)
     # Torque (top right toggle) => set the value for motion (can select Velocity/Position mode)
 
+## Interfacing with ROS2
+
 ### installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
 Following <a href="https://github.com/SphericalCowww/ROS_init_practice">github</a> to install ROS. To install drivers for Dynamixel, 
@@ -63,7 +65,7 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
     ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
 
-### testing the driver in ros
+### testing the driver in ROS2
 
     colcon build
     source install/setup.bash
@@ -71,7 +73,7 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 run my_robot_firmware testRaspPi5_dynamixel_opencr1_channel0_xl430 
     ps -ef | grep testRaspPi5_dynamixel_opencr1_channel0_xl430                 # to kill it before it ends
 
-### testing moveit with Gazebo
+### testing MoveIt with Gazebo
 
     colcon build
     source install/setup.bash
