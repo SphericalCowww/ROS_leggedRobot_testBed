@@ -1,9 +1,0 @@
-<library path="my_robot_hardware_interface">
-    <class name="my_robot_base/HardwareInterfacePCA9685_base"
-           type="my_robot_base::HardwareInterfacePCA9685_base"
-           base_class_type="hardware_interface::SystemInterface">
-        <description>
-            Hardware interface for the base controlling 2 servos using PCA9685 
-        </description>
-    </class>
-</library>

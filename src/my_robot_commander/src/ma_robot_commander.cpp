@@ -11,7 +11,7 @@ using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
 using namespace std::placeholders;                  // for using _1
 using ros_string   = example_interfaces::msg::String;
 using ros_array    = example_interfaces::msg::Float64MultiArray;
-using custom_array = my_robot_interface::msg::ArmPoseTarget;
+using custom_array = my_robot_interface::msg::MaRobotArmPoseTarget;
 using ros_bool     = example_interfaces::msg::Bool;
 
 class ma_robot_commander_class
