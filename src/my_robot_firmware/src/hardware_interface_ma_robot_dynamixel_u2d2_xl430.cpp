@@ -58,9 +58,9 @@ namespace ma_robot_namespace {
         (void) period; 
         
         // see: src/my_robot_description/urdf/ma_robot.ros2_control.xacro
-        channel_set_position_(joint1_servo_channel_, get_command("arm_joint1/position"));
-        channel_set_position_(joint2_servo_channel_, get_command("arm_joint2/position"));
-        channel_set_position_(joint3_servo_channel_, get_command("arm_joint3/position"));
+        channel_set_position_(joint1_servo_channel_, get_command("joint1/position"));
+        channel_set_position_(joint2_servo_channel_, get_command("joint2/position"));
+        channel_set_position_(joint3_servo_channel_, get_command("joint3/position"));
         return hardware_interface::return_type::OK;
     }   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

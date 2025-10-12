@@ -2,8 +2,12 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <ros2_control name="my_arm_gripper" type="system">
         <hardware>
-            <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-            <plugin>mock_components/GenericSystem</plugin>
+            <!--plugin>mock_components/GenericSystem</plugin-->
+        
+            <plugin>ma_robot_namespace::HardwareInterfaceU2D2_ma_robot</plugin>
+            <param name="joint1_servo_channel">11</param> 
+            <param name="joint2_servo_channel">12</param>
+            <param name="joint3_servo_channel">13</param>
         </hardware>
         <joint name="gripper_left_finger_joint">
             <command_interface name="position"/>

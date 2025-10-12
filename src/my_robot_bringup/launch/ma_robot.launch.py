@@ -12,13 +12,12 @@ def generate_launch_description():
     robot_description_path   = get_package_share_path('my_robot_description')
     robot_bringup_path       = get_package_share_path('my_robot_bringup')
     robot_moveit_config_path = get_package_share_path('ma_robot_moveit_config')   
- 
-    urdf_path          = os.path.join(robot_description_path, 'urdf', 'ma_robot.urdf.xacro')
-    rviz_config_path   = os.path.join(robot_description_path, 'rviz', 'my_robot.urdf_config.rviz')
-    robot_description  = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
-    robot_controllers  = os.path.join(robot_bringup_path, 'config', 'ma_robot_controllers.yaml')
+    urdf_path          = os.path.join(robot_description_path,   'urdf',   'ma_robot.urdf.xacro')
+    robot_controllers  = os.path.join(robot_bringup_path,       'config', 'ma_robot_controllers.yaml')
     moveit_config_path = os.path.join(robot_moveit_config_path, 'launch', 'move_group.launch.py')
+    rviz_config_path   = os.path.join(robot_description_path,   'rviz',   'ma_robot.urdf_config.rviz')
 
+    robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
