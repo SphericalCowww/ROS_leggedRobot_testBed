@@ -99,4 +99,9 @@ Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
     * src/my_robot_commander/src/ma_robot_commander.cpp
     * src/my_robot_description/rviz/ma_robot.urdf_config.rviz
 
+Then run the following:
 
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup ma_robot.launch.with_commander.py
+    ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
