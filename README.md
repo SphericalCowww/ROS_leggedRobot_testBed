@@ -82,7 +82,7 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
 
 ### testing the driver with ros2_control and MoveIt
-Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>ma_robot_namespace::HardwareInterfaceU2D2_ma_robot</plugin>``. The latter plugin type can be found at the bottom of ``src/my_robot_firmware/src/**hardware_interface_ma_robot_dynamixel_u2d2_xl430.cpp``
+Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>ma_robot_namespace::HardwareInterfaceU2D2_ma_robot</plugin>``. The latter plugin type can be found at the bottom of ``src/my_robot_firmware/hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml``.
 
   * src/my_robot_**bringup**/launch/**ma_robot.with_commander.launch.py**
     * src/my_robot_description/urdf/ma_robot.urdf.xacro
@@ -90,6 +90,7 @@ Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
       * src/my_robot_description/urdf/ma_robot_arm.xacro.xacro
       * src/my_robot_description/urdf/ma_robot_gripper.xacro.xacro
       * src/my_robot_**description**/urdf/**ma_robot.ros2_control.xacro**
+        * src/my_robot_firmware/hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml
         * src/my_robot_**firmware**/include/my_robot_firmware/**hardware_interface_ma_robot_dynamixel_u2d2_xl430.hpp**
     * src/my_robot_**bringup**/config/**ma_robot_controllers.yaml**
       * joint_trajectory_controller/JointTrajectoryController
@@ -99,4 +100,3 @@ Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
     * src/my_robot_description/rviz/ma_robot.urdf_config.rviz
 
 
-## References:
