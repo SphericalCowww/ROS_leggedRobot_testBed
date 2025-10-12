@@ -1,6 +1,6 @@
 <library path="my_robot_hardware_interface">
-    <class name="my_robot_oneleg/HardwareInterfaceU2D2_oneleg"
-           type="my_robot_oneleg::HardwareInterfaceU2D2_oneleg"
+    <class name="ma_robot_namespace/HardwareInterfaceU2D2_ma_robot"
+           type="ma_robot_namespace::HardwareInterfaceU2D2_ma_robot"
            base_class_type="hardware_interface::SystemInterface">
         <description>
             Hardware interface for the base controlling 3 dynamixel xl430 servos using U2D2

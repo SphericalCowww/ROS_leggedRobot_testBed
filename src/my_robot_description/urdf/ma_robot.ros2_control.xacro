@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <ros2_control name="my_arm_gripper" type="system">
+    <ros2_control name="ma_robot_arm" type="system">
         <hardware>
             <!--plugin>mock_components/GenericSystem</plugin-->
         
@@ -9,12 +9,6 @@
             <param name="joint2_servo_channel">12</param>
             <param name="joint3_servo_channel">13</param>
         </hardware>
-        <joint name="gripper_left_finger_joint">
-            <command_interface name="position"/>
-            <state_interface name="position">
-                <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
         <joint name="joint1">
             <command_interface name="position"/>
             <state_interface name="position">
@@ -46,6 +40,18 @@
             </state_interface>
         </joint>
         <joint name="joint6">
+            <command_interface name="position"/>
+            <state_interface name="position">
+                <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+    </ros2_control>
+    
+    <ros2_control name="ma_robot_gripper" type="system">
+        <hardware>
+            <plugin>mock_components/GenericSystem</plugin>
+        </hardware>
+        <joint name="gripper_left_finger_joint">
             <command_interface name="position"/>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>

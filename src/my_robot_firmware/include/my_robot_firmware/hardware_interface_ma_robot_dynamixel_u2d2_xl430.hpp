@@ -1,10 +1,16 @@
-#ifndef HARDWARE_INTERFACE_PCA9685_ARM_HPP
-#define HARDWARE_INTERFACE_PCA9685_ARM_HPP
+#ifndef HARDWARE_INTERFACE_MA_ROBOT_DYNAMIXEL_U2D2_XL430_HPP
+#define HARDWARE_INTERFACE_MA_ROBOT_DYNAMIXEL_U2D2_XL430_HPP
 
 #include "hardware_interface/system_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 #include "dynamixel_workbench_toolbox/dynamixel_workbench.h"
+
+#define PORT_NAME    "/dev/ttyUSB0"
+#define BAUD_RATE    57600
+#define MIN_POSITION 0
+#define MAX_POSITION 4095
+#define DXL_PI       3.1415926
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace ma_robot_namespace {
@@ -26,14 +32,9 @@ namespace ma_robot_namespace {
             hardware_interface::CallbackReturn 
                 on_deactivate(const rclcpp_lifecycle::State &previous_state) override;
         private:
-            const char* port_name_ = "/dev/ttyUSB0";
-            int baud_rate_    = 57600;
-            int min_position_ = 0;
-            int max_position_ = 4095;
-            uint16_t model_number_ = 0;
-
             std::shared_ptr<rclcpp::Node> node_;
             DynamixelWorkbench dxl_wb_;
+            uint16_t model_number_ = 0;
             const char *log_;
             bool dxl_return_ = false;
             int32_t dxl_position_ = 0;
@@ -45,9 +46,9 @@ namespace ma_robot_namespace {
             bool write_first_call_ = true;
             rclcpp::Time start_time_;
 
-            void channel_init_         (int channel);
-            void channel_set_position_ (int channel, int position);
-            void channel_read_position_(int channel);
+            void   channel_init_         (int channel);
+            void   channel_set_position_ (int channel, double position);
+            double channel_read_position_(int channel);
     };    
 }
 
