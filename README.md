@@ -103,5 +103,6 @@ Then run the following:
 
     colcon build
     source install/setup.bash
+    sudo chmod a+rw /dev/ttyUSB0
     ros2 launch my_robot_bringup ma_robot.with_commander.launch.py
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
