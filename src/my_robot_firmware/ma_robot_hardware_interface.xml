@@ -1,4 +1,4 @@
-<library path="my_robot_hardware_interface">
+<library path="ma_robot_hardware_interface">
     <class name="ma_robot_namespace/HardwareInterfaceU2D2_ma_robot"
            type="ma_robot_namespace::HardwareInterfaceU2D2_ma_robot"
            base_class_type="hardware_interface::SystemInterface">

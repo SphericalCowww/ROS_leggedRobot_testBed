@@ -28,12 +28,12 @@ install(TARGETS testRaspPi5_dynamixel_u2d2_channel0_xl430 testRaspPi5_dynamixel_
 )
 
 ###########################################################################
-add_library(hardware_interface_ma_robot_dynamixel_u2d2_xl430 SHARED
+add_library(ma_robot_hardware_interface SHARED
   src/hardware_interface_ma_robot_dynamixel_u2d2_xl430.cpp
 )
-ament_target_dependencies(hardware_interface_ma_robot_dynamixel_u2d2_xl430 rclcpp rclcpp_lifecycle dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox hardware_interface pluginlib)
-pluginlib_export_plugin_description_file(hardware_interface hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml)
-install(TARGETS hardware_interface_ma_robot_dynamixel_u2d2_xl430
+ament_target_dependencies(ma_robot_hardware_interface rclcpp rclcpp_lifecycle dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox hardware_interface pluginlib)
+pluginlib_export_plugin_description_file(hardware_interface ma_robot_hardware_interface.xml)
+install(TARGETS ma_robot_hardware_interface
   DESTINATION lib/${PROJECT_NAME}
 )
 install(
@@ -41,7 +41,7 @@ install(
   DESTINATION include
 ) 
 ament_export_libraries(
-    hardware_interface_ma_robot_dynamixel_u2d2_xl430
+    ma_robot_hardware_interface
 )
 ament_export_dependencies(rclcpp rclcpp_lifecycle hardware_interface pluginlib)
 
