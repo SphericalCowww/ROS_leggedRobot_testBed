@@ -105,4 +105,11 @@ Then run the following:
     source install/setup.bash
     sudo chmod a+rw /dev/ttyUSB0
     ros2 launch my_robot_bringup ma_robot.with_commander.launch.py
+    ros2 topic info /arm_set_name
+    ros2 topic pub -1 /arm_set_named example_interfaces/msg/String "{data: "arm_pose1"}"
+    ros2 topic info /arm_set_joint
+    ros2 topic pub -1 /arm_set_joint example_interfaces/msg/Float64MultiArray "{data: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]}"
+    ros2 topic info /arm_set_pose
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
+    ros2 topic info /gripper_set_open
+    ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
