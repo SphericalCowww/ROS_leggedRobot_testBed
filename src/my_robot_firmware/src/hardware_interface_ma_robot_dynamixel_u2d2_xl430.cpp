@@ -25,8 +25,8 @@ namespace ma_robot_namespace {
         } 
 
         joint1_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint1_servo_channel"));
-        joint2_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint2_servo_channel"));
-        joint3_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint3_servo_channel"));
+        joint4_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint4_servo_channel"));
+        joint6_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint6_servo_channel"));
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_ma_robot::read 
@@ -43,13 +43,16 @@ namespace ma_robot_namespace {
     
         // see: src/my_robot_description/urdf/ma_robot.ros2_control.xacro
         double joint1_position = channel_read_position_(joint1_servo_channel_); 
-        double joint2_position = channel_read_position_(joint2_servo_channel_);
-        double joint3_position = channel_read_position_(joint3_servo_channel_);
+        double joint4_position = channel_read_position_(joint4_servo_channel_);
+        double joint6_position = channel_read_position_(joint6_servo_channel_);
         set_state("joint1/position", joint1_position);
-        set_state("joint2/position", joint2_position);
-        set_state("joint3/position", joint3_position);
-        RCLCPP_INFO(node_->get_logger(), "read position (joint1, joint2, joint3): (%f, %f, %f)", 
-                    joint1_position, joint2_position, joint3_position);
+        set_state("joint2/position", joint2_position_);
+        set_state("joint3/position", joint3_position_);
+        set_state("joint4/position", joint4_position);
+        set_state("joint5/position", joint5_position_);
+        set_state("joint6/position", joint6_position);
+        RCLCPP_INFO(node_->get_logger(), "read position (joint1, joint4, joint6): (%f, %f, %f)", 
+                    joint1_position, joint4_position, joint6_position);
         return hardware_interface::return_type::OK;
     }
     hardware_interface::return_type HardwareInterfaceU2D2_ma_robot::write
@@ -61,13 +64,25 @@ namespace ma_robot_namespace {
         
         // see: src/my_robot_description/urdf/ma_robot.ros2_control.xacro
         double joint1_position = get_command("joint1/position");
-        double joint2_position = get_command("joint2/position");
-        double joint3_position = get_command("joint3/position");
+        joint2_position_       = get_command("joint2/position");
+        joint3_position_       = get_command("joint3/position");
+        double joint4_position = get_command("joint4/position");
+        joint5_position_       = get_command("joint5/position");
+        double joint6_position = get_command("joint6/position");
+        if (std::isnan(joint1_position) | std::isnan(joint2_position_) | std::isnan(joint3_position_) |
+            std::isnan(joint4_position) | std::isnan(joint5_position_) | std::isnan(joint6_position)) {
+            joint1_position  = 0.0;
+            joint2_position_ = 0.0;
+            joint3_position_ = 0.0;
+            joint4_position  = 0.0;
+            joint5_position_ = 0.0;
+            joint6_position  = 0.0;
+        }
         channel_set_position_(joint1_servo_channel_, joint1_position);
-        channel_set_position_(joint2_servo_channel_, joint2_position);
-        channel_set_position_(joint3_servo_channel_, joint3_position);
-        RCLCPP_INFO(node_->get_logger(), "write position (joint1, joint2, joint3): (%f, %f, %f)",
-                    joint1_position, joint2_position, joint3_position);
+        channel_set_position_(joint4_servo_channel_, joint4_position);
+        channel_set_position_(joint6_servo_channel_, joint6_position);
+        RCLCPP_INFO(node_->get_logger(), "write position (joint1, joint4, joint6): (%f, %f, %f)",
+                    joint1_position, joint4_position, joint6_position);
         return hardware_interface::return_type::OK;
     }   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +95,11 @@ namespace ma_robot_namespace {
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
-        channel_init_(joint2_servo_channel_);
+        channel_init_(joint4_servo_channel_);
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
-        channel_init_(joint3_servo_channel_);
+        channel_init_(joint6_servo_channel_);
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
@@ -103,8 +118,8 @@ namespace ma_robot_namespace {
         set_state("joint6/position", 0.0);
  
         channel_set_position_(joint1_servo_channel_, 0);
-        channel_set_position_(joint2_servo_channel_, 0);
-        channel_set_position_(joint3_servo_channel_, 0);
+        channel_set_position_(joint4_servo_channel_, 0);
+        channel_set_position_(joint6_servo_channel_, 0);
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_ma_robot::on_deactivate
@@ -113,8 +128,8 @@ namespace ma_robot_namespace {
         RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_ma_robot::on_deactivate()");
         (void) previous_state;
         channel_set_position_(joint1_servo_channel_, 0);
-        channel_set_position_(joint2_servo_channel_, 0);
-        channel_set_position_(joint3_servo_channel_, 0);
+        channel_set_position_(joint4_servo_channel_, 0);
+        channel_set_position_(joint6_servo_channel_, 0);
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,22 +152,22 @@ namespace ma_robot_namespace {
         }
     }
     void HardwareInterfaceU2D2_ma_robot::channel_set_position_(int channel, double position) {
-        dxl_position_ = (int32_t) (position + DXL_PI)*(MAX_POSITION-MIN_POSITION)/DXL_PI;
+        dxl_position_ = (int32_t) ((position + DXL_PI)*(MAX_POSITION-MIN_POSITION)/(2*DXL_PI));
         dxl_return_ = dxl_wb_.goalPosition(channel, dxl_position_); 
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to set position: %f", position);
         } else {
-            RCLCPP_INFO(node_->get_logger(), "Channel %i setting position: %f", channel, position);
+            RCLCPP_INFO(node_->get_logger(), "Channel %i setting position: %f, %i", channel, position, dxl_position_);
         }
     }
     double HardwareInterfaceU2D2_ma_robot::channel_read_position_(int channel) {
         dxl_return_ = dxl_wb_.itemRead(channel, "Present_Position", &dxl_position_, &log_);
-        double position = (double) (dxl_position_ - (MAX_POSITION-MIN_POSITION)/2)*DXL_PI/(MAX_POSITION-MIN_POSITION);
+        double position = (double) ((dxl_position_-(MAX_POSITION-MIN_POSITION)/2)*2*DXL_PI/(MAX_POSITION-MIN_POSITION));
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to read position!");
             return -1.0;
         } else {
-            RCLCPP_INFO(node_->get_logger(), "Channel %i reading position: %f", channel, position);
+            RCLCPP_INFO(node_->get_logger(), "Channel %i reading position: %f, %i", channel, position, dxl_position_);
         }
         return position;
     }

@@ -6,8 +6,8 @@
         
             <plugin>ma_robot_namespace/HardwareInterfaceU2D2_ma_robot</plugin>
             <param name="joint1_servo_channel">11</param> 
-            <param name="joint2_servo_channel">12</param>
-            <param name="joint3_servo_channel">13</param>
+            <param name="joint4_servo_channel">12</param>
+            <param name="joint6_servo_channel">13</param>
         </hardware>
         <joint name="joint1">
             <command_interface name="position"/>

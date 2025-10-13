@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="urdf_pi" value="3.14159"/>
+
     <material name="grey">
         <color rgba="0.5 0.5 0.5 1"/>
     </material>    

@@ -8,8 +8,8 @@
 
 #define PORT_NAME    "/dev/ttyUSB0"
 #define BAUD_RATE    57600
-#define MIN_POSITION 0
-#define MAX_POSITION 4095
+#define MIN_POSITION 0.0
+#define MAX_POSITION 4095.0
 #define DXL_PI       3.1415926
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,8 +40,11 @@ namespace ma_robot_namespace {
             int32_t dxl_position_ = 0;
 
             int joint1_servo_channel_;
-            int joint2_servo_channel_;
-            int joint3_servo_channel_;
+            int joint4_servo_channel_;
+            int joint6_servo_channel_;
+            double joint2_position_;
+            double joint3_position_;
+            double joint5_position_;
 
             bool write_first_call_ = true;
             rclcpp::Time start_time_;
