@@ -1,13 +1,22 @@
 # Testing for Legged Robot using ROS2
 
+Goal: quadruped robot dog
+
 ## Hardware Connections
 
 | device | DYNAMIXEL models | number | specification |
 | - | - | - | - |
-| controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
 | USB interface + power hub | <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + power hub board | 1 | Can control 12 servo in daisy chain if properly powered |
 | power supply | SMPS | 4? | 12V 5A | 
-| servo motor | <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | max stall torque 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
+| servo motor | <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
+| controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
+
+#### XL430-W250-T dimensions
+
+  * general dimension: 28.5 x 46.5 x 34 [WxHxD mm]
+  * screw size: M2 on rotor plate, M2.5 screws on frame corners, M2.6 on frame surfaces
+  * <a href="https://en.robotis.com/service/downloadpage.php?ca_id=70">CAD download</a>
+  * bracket reference: <a href="https://grabcad.com/library/openmanipulator-x-frame-set-rm-x52-1">OpenManipulator-X</a>
 
 ### setting the servo IDs
 
@@ -113,3 +122,6 @@ Then run the following:
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
+
+## References:
+- AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
