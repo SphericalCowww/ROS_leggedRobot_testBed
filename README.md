@@ -20,7 +20,7 @@ Goal: quadruped robot dog
 
 #### 3D CAD dimensions
 
-  * using 3M screws overall, as they are much more common. Piece thickness will be 4mm, except when an 3M screw is required on the thickness axis, then it's 6mm. 
+  * using 3M screws overall, as they are much more common. Piece thickness will be 4mm, except when a 3M screw is required on the thickness axis, then it's 6mm. For aperture dimension, 1.7mm radius for clearance, and 1.25mm for tapped without heated insert.
 
 ### setting the servo IDs
 
