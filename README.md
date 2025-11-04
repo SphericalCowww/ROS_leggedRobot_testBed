@@ -18,6 +18,10 @@ Goal: quadruped robot dog
   * <a href="https://en.robotis.com/service/downloadpage.php?ca_id=70">CAD download</a>
   * bracket reference: <a href="https://grabcad.com/library/openmanipulator-x-frame-set-rm-x52-1">OpenManipulator-X</a>
 
+#### 3D CAD dimensions
+
+  * using 3M screws overall, as they are much more common. Piece thickness will be 4mm, except when an 3M screw is required on the thickness axis, then it's 6mm. 
+
 ### setting the servo IDs
 
 Connecting servo to U2D2 according to <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
