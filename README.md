@@ -7,8 +7,10 @@ Goal: quadruped robot dog
 | device | DYNAMIXEL models | number | specification |
 | - | - | - | - |
 | USB interface + power hub | <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + power hub board | 1 | Can control 12 servo in daisy chain if properly powered |
-| power supply | SMPS | 4? | 12V 5A | 
+
 | servo motor | <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
+| power supply | SMPS | 4? | 12V 5A each | 
+| battery | 18650 | 6 | 3.6-3.7V 1.2-3.5A each; need 2 parallel of 4 in series | 
 | controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
 
 #### XL430-W250-T dimensions
@@ -126,6 +128,12 @@ Then run the following:
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
+
+### Quadruped: CAD Model
+
+One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly1Leg.png" width="200">
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
