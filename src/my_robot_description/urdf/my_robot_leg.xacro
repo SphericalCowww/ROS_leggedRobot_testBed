@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- ======================================================================================================== -->
+<!-- reference from  Antonio Brandi, "Robotics and ROS 2 - Learn by Doing! Manipulators" (Udemy) -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot_leg">
+    <xacro:include filename="$(find my_robot_description)/urdf/common_properties.xacro"/>
+
+    <!-- xacro:include filename="$(find robot_build)/urdf/arduinobot.ros2_control.xacro"/-->
+
+    <xacro:property name="effort"   value="30.0" />
+    <xacro:property name="velocity" value="10.0" />
+<!-- ======================================================================================================== -->
+
+    <!-- Links -->
+    <link name="world"/>
+
+    <link name="base_link">
+        <visual>
+            <origin rpy="0 0 0" xyz="-0.5 -0.5 0"/>
+            <geometry>
+                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate-Body.stl" scale="0.01 0.01 0.01"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="-0.5 -0.5 0"/>
+            <geometry>
+                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate-Body.stl" scale="0.01 0.01 0.01"/>
+            </geometry>
+        </collision>
+        <xacro:lazy_inertia m="1.0"/>
+    </link>
+
+<!-- ======================================================================================================== -->
+    <!-- Joints -->  
+    <joint name="virtual_joint" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint> 
+
+<!-- ======================================================================================================== -->
+
+</robot>
