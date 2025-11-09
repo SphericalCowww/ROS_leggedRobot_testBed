@@ -135,7 +135,7 @@ Then run the following:
   * Plan to use 2 U2D2 power hub boards controlled by one U2D2. Each hub can be powered independently and controlled by a single U2D2 as long as they share the TTL connection. This requires a Y-cable from U2D2 to the 2 hubs; may need to custom-connect two <a href="https://emanual.robotis.com/docs/en/dxl/x/xl320/#connector-information">MOLEX 51065-0300</a> cables to make a Y-cable.
   * Plan to power the hubs using their SMPS DC jacks. Then use the molex/screw terminal as an output to power the Raspberry Pi 5 via a 12V-to-5V DC-DC converter.
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="400">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
 
 ### Quadruped: CAD Model
 
