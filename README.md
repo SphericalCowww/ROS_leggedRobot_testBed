@@ -6,8 +6,8 @@ Goal: quadruped robot dog
 
 | device | DYNAMIXEL models | number | specification |
 | - | - | - | - |
-| USB interface | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> | 1 | Can control 12 servo in daisy chain if properly powered |
-| communication + power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">U2D2 power hub board</a> | 2 | Operating voltage	3.5-24V withg a maximum current	of 10A |
+| USB communication interface | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> | 1 | Can control 12 servo in daisy chain if properly powered |
+| communication/power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">U2D2 power hub board</a> | 2 | Operating voltage	3.5-24V withg a maximum current	of 10A |
 | servo motor | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 N*m (at 12.0V, 1.4A, 1.071 Nm/A) |
 | battery | 18650 | 6 | Operating voltage 3.6-3.7V with a discharge max of 10A each; need 2 parallel of 3 in series | 
 | power supply | SMPS | 1 | 12V/5A to test 1 leg | 
@@ -128,6 +128,14 @@ Then run the following:
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
+
+### Power System
+
+  * The daisy chain is recommended to chain 4 or fewer servos to avoid delay
+  * Plan to use 2 U2D2 power hub boards controlled by one U2D2. Each hub can be powered independently and controlled by a single U2D2 as long as they share the TTL connection. This requires a Y-cable from U2D2 to the 2 hubs; may need to custom-connect two <a href="https://emanual.robotis.com/docs/en/dxl/x/xl320/#connector-information">MOLEX 51065-0300</a> cables to make a Y-cable.
+  * Plan to power the hubs using their SMPS DC jacks. Then use the molex/screw terminal as an output to power the Raspberry Pi 5 via a 12V-to-5V DC-DC converter.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="400">
 
 ### Quadruped: CAD Model
 
