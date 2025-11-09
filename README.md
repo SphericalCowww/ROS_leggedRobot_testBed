@@ -36,7 +36,7 @@ Goal: quadruped robot dog
 
 One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly4Leg.png" width="350">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly4Leg.png" width="350">
 
 ### setting the servo IDs
 
