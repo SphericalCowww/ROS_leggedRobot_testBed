@@ -24,6 +24,20 @@ Goal: quadruped robot dog
 
   * using 3M screws overall, as they are much more common. Piece thickness will be 4mm, except when a 3M screw is required on the thickness axis, then it's 6mm. For aperture dimension, 1.7mm radius for clearance, and 1.25mm for tapped without heated insert.
 
+### Power System
+
+  * The daisy chain is recommended to chain 4 or fewer servos to avoid delay
+  * Plan to use 2 U2D2 power hub boards controlled by one U2D2. Each hub can be powered independently and controlled by a single U2D2 as long as they share the TTL connection. This requires a Y-cable from U2D2 to the 2 hubs; may need to custom-connect two <a href="https://emanual.robotis.com/docs/en/dxl/x/xl320/#connector-information">MOLEX 51065-0300</a> cables to make a Y-cable.
+  * Plan to power the hubs using their SMPS DC jacks. Then use the molex/screw terminal as an output to power the Raspberry Pi 5 via a 12V-to-5V DC-DC converter.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
+
+### Quadruped: CAD Model
+
+One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly4Leg.png" width="350">
+
 ### setting the servo IDs
 
 Connecting servo to U2D2 according to <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
@@ -129,19 +143,7 @@ Then run the following:
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
 
-### Power System
 
-  * The daisy chain is recommended to chain 4 or fewer servos to avoid delay
-  * Plan to use 2 U2D2 power hub boards controlled by one U2D2. Each hub can be powered independently and controlled by a single U2D2 as long as they share the TTL connection. This requires a Y-cable from U2D2 to the 2 hubs; may need to custom-connect two <a href="https://emanual.robotis.com/docs/en/dxl/x/xl320/#connector-information">MOLEX 51065-0300</a> cables to make a Y-cable.
-  * Plan to power the hubs using their SMPS DC jacks. Then use the molex/screw terminal as an output to power the Raspberry Pi 5 via a 12V-to-5V DC-DC converter.
-
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
-
-### Quadruped: CAD Model
-
-One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
-
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CAD/zAssembly4Leg.png" width="350">
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
