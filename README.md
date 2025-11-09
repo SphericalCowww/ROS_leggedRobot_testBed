@@ -6,8 +6,8 @@ Goal: quadruped robot dog
 
 | device | DYNAMIXEL models | number | specification |
 | - | - | - | - |
-| USB interface + power hub | <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">power hub board</a> | 1 | Can control 12 servo in daisy chain if properly powered |
-| servo motor | <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
+| USB interface + power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> + <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">power hub board</a> | 1 | Can control 12 servo in daisy chain if properly powered |
+| servo motor | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 [N.m] (at 12.0 [V], 1.4 [A], 1.071 [Nm/A]) |
 | power supply | SMPS | 4? | 12V 5A each | 
 | battery | 18650 | 6 | 3.6-3.7V 1.2-3.5A each; need 2 parallel of 4 in series | 
 | controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
