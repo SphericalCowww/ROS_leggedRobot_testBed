@@ -32,11 +32,16 @@ Goal: quadruped robot dog
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
 
-### Quadruped: CAD Model
+### Quadruped: CAD Model and Physical Assembly
 
 One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly4Leg.png" width="350">
+
+The current design has many flaws, but here is the first assembly:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg.png" width="300">
+
 
 ### setting the servo IDs
 
