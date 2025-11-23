@@ -1,43 +1,122 @@
 <?xml version="1.0"?>
-<!-- ======================================================================================================== -->
-<!-- reference from  Antonio Brandi, "Robotics and ROS 2 - Learn by Doing! Manipulators" (Udemy) -->
+<!-- ================================================================================================================================== -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot_leg">
     <xacro:include filename="$(find my_robot_description)/urdf/common_properties.xacro"/>
+    <xacro:property name="effort"   value="30.0"/>
+    <xacro:property name="velocity" value="10.0"/>
 
-    <!-- xacro:include filename="$(find robot_build)/urdf/arduinobot.ros2_control.xacro"/-->
+    <xacro:property name="servo_x" value="0.0285"/>
+    <xacro:property name="servo_y" value="0.0465"/>
+    <xacro:property name="servo_z" value="0.034"/>
 
-    <xacro:property name="effort"   value="30.0" />
-    <xacro:property name="velocity" value="10.0" />
-<!-- ======================================================================================================== -->
-
-    <!-- Links -->
+<!-- ================================================================================================================================== -->
     <link name="world"/>
 
+    <!-- ============================ -->
     <link name="base_link">
         <visual>
-            <origin rpy="0 0 0" xyz="-0.5 -0.5 0"/>
             <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate-Body.stl" scale="0.01 0.01 0.01"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_basePlate-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
-            <material name="red"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <material name="white"/>
         </visual>
         <collision>
-            <origin rpy="0 0 0" xyz="-0.5 -0.5 0"/>
             <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate-Body.stl" scale="0.01 0.01 0.01"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_basePlate-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
         <xacro:lazy_inertia m="1.0"/>
     </link>
 
-<!-- ======================================================================================================== -->
-    <!-- Joints -->  
-    <joint name="virtual_joint" type="fixed">
-        <parent link="world"/>
-        <child link="base_link"/>
+    <!-- ============================ -->
+    <link name="servo1_holder">
+        <visual>
+            <geometry>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_XL-430holderBasic.stl" scale="1.0 1.0 1.0"/>
+            </geometry>
+            <material name="grey"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_XL-430holderBasic.stl" scale="1.0 1.0 1.0"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </collision>
+        <xacro:box_inertia m="0.01" x="0.037" y="0.032" z="0.014" o_xyz="0 0 -0.01" o_rpy="0 0 0"/>
+    </link> 
+    <joint name="base_link_servo1_holder" type="fixed">
+        <parent link="base_link"/>
+        <child  link="servo1_holder"/>
+        <origin xyz="0 0 0.004" rpy="0 0 0"/>
+    </joint>
+    
+    <link name="servo1">
+        <visual>
+            <geometry>
+                <box size="${servo_x} ${servo_y} ${servo_z}"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${servo_x} ${servo_y} ${servo_z}"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </collision>
+        <xacro:box_inertia m="0.0572" x="${servo_x}" y="${servo_y}" z="${servo_z}" o_xyz="0 0 0" o_rpy="0 0 0"/>
+    </link> 
+    <joint name="servo1_holder_servo1" type="fixed">
+        <parent link="servo1_holder"/>
+        <child  link="servo1"/>
         <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint> 
+    </joint>
 
-<!-- ======================================================================================================== -->
+    <link name="servo1_padding">
+        <visual>
+            <geometry>
+                <cylinder radius="0.011" length="0.004"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.011" length="0.004"/>
+            </geometry>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </collision>
+        <xacro:cylinder_inertia m="0.001" x="0.011" l="0.004" o_xyz="0 0 0" o_rpy="0 0 0"/>
+    </link> 
+    <joint name="servo1_servo1_padding" type="continuous">
+        <parent link="servo1"/>
+        <child  link="servo1_padding"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+    </joint>
+    <!-- ============================ -->
+
+
 
 </robot>
+<!-- ================================================================================================================================== -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
