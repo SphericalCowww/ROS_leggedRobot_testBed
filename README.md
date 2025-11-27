@@ -40,7 +40,7 @@ One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of t
 
 The current design has many flaws, but here is the first assembly:
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg.png" width="300">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.png" width="300">
 
 
 ### setting the servo IDs
