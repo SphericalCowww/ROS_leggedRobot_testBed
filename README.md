@@ -65,9 +65,7 @@ The current design has many flaws, but here is the first assembly:
 
 <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.mp4" controls width="300"></video>
 
-## Interfacing with ROS2
-
-### installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
+## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
 Following <a href="https://github.com/SphericalCowww/ROS_init_practice">github</a> to install ROS. To install drivers for Dynamixel, 
 
@@ -99,6 +97,8 @@ Connect U2D2 to Rasp Pi USB port:
     sudo chmod a+rw /dev/ttyUSB0                   # required everytime after reconnection
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
     ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
+
+## Testing ROS2 interface with a simulated robot arm
 
 ### testing the driver in ROS2
 
@@ -149,7 +149,19 @@ Then run the following:
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
 
+## Testing ROS2 interface with 1 leg
 
+### launch urdf
+
+Then run the following:
+
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_description my_robot.rviz.launch.xacro.py
+    # if no config loaded
+    ## Fixed Frame: base_link
+    ## Add: RobotModel
+    ## RobotModel: Description Topic: /robot_description
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
