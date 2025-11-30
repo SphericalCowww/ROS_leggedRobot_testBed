@@ -32,18 +32,6 @@ Goal: quadruped robot dog
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
 
-### Quadruped: CAD Model and Physical Assembly
-
-One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
-
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly4Leg.png" width="350">
-
-The current design has many flaws, but here is the first assembly:
-
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.png" width="300">
-
-<video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.mp4" controls width="300"></video>
-
 ### setting the servo IDs
 
 Connecting servo to U2D2 according to <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
@@ -64,6 +52,18 @@ Can also test out the servo:
 
     # LED (top right toggle)
     # Torque (top right toggle) => set the value for motion (can select Velocity/Position mode)
+
+### Quadruped: CAD Model and Physical Assembly
+
+One leg assembly needs 3 servos to ensure all 3 degrees of freedom for each of the 4 leg tips:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly1Leg.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/my_robot_description/mesh/CADv0/zAssembly4Leg.png" width="350">
+
+The current design has many flaws, but here is the first assembly:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.png" width="300">
+
+<video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.mp4" controls width="300"></video>
 
 ## Interfacing with ROS2
 
