@@ -12,14 +12,14 @@
     <link name="base_link">
         <visual>
             <geometry>
-                <mesh filename="/home/kali/Documents/ROS_init_practice/ros2_ws5_manipulator/src/my_robot_description/mesh/basement.STL"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_basePlate-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <material name="white"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.1 0.1 0.004"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_basePlate-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
             <origin xyz="0 0 -0.002" rpy="0 0 0"/>
         </collision>
@@ -30,14 +30,14 @@
     <link name="servo1_holder">
         <visual>
             <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_XL-430holderBasic.stl" scale="1.0 1.0 1.0"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_XL-430holderBasic-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
             <material name="grey"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.037 0.032 0.014"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_XL-430holderBasic-Body.stl" scale="1.0 1.0 1.0"/>
             </geometry>
             <origin xyz="0 0 -0.007" rpy="0 0 0"/>
         </collision>

@@ -5,6 +5,7 @@ from launch.substitutions import Command
 import os
 from ament_index_python.packages import get_package_share_path
 
+##############################################################################################################################
 def generate_launch_description():
     urdf_file_name = 'my_robot.urdf.xacro'
     urdf_path = os.path.join(get_package_share_path('my_robot_description'),
@@ -26,9 +27,11 @@ def generate_launch_description():
     )
 
     rviz2_node = Node(
-        package="rviz2",
+        package   ="rviz2",
         executable="rviz2",
-#        arguments=['-d', rviz_config_path]
+        name      ="rviz2",
+        output    ="screen",
+        arguments=['-d', rviz_config_path]
     )
 
     return LaunchDescription([
@@ -36,3 +39,8 @@ def generate_launch_description():
         joint_state_publisher_gui_node,
         rviz2_node
     ])
+
+##############################################################################################################################
+
+
+
