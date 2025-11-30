@@ -42,6 +42,7 @@ The current design has many flaws, but here is the first assembly:
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.png" width="300">
 
+<video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.mp4" controls width="300"></video>
 
 ### setting the servo IDs
 
