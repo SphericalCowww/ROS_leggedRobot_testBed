@@ -9,7 +9,7 @@ Goal: quadruped robot dog
 | USB communication interface | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> | 1 | Can control 12 servo in daisy chain if properly powered |
 | communication/power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">U2D2 power hub board</a> | 2 | Operating voltage	3.5-24V withg a maximum current	of 10A |
 | servo motor | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 N*m (at 12.0V, 1.4A, 1.071 Nm/A) |
-| battery | ZYGY <a href="https://www.amazon.de/dp/B0DZ65LMPT?ref=ppx_yo2ov_dt_b_fed_asin_title">11.1V 2000mAh</a> | 2 | already includes protection. Need adapters for: T-plug => XT60 Male => DC 5.5mm x 2.5mm Male | 
+| battery | ZYGY <a href="https://www.amazon.de/dp/B0BB6RMM5Q">11.1V 2000mAh</a> | 2 | already includes protection. Need adapters for: T-plug => XT60 Male => DC 5.5mm x 2.5mm Male | 
 | battery | Palogreen <a href="https://www.amazon.de/dp/B0DZ65LMPT">12.6V DC Akku 2800mAh</a> | 4 | already includes protection. One for powering the rasp pi 5, and several backups | 
 | power supply | SMPS | 1 | 12V/5A to test 1 leg | 
 |  |  |  |  | 
