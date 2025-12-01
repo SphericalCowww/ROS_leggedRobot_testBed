@@ -9,9 +9,12 @@ Goal: quadruped robot dog
 | USB communication interface | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2/">U2D2</a> | 1 | Can control 12 servo in daisy chain if properly powered |
 | communication/power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">U2D2 power hub board</a> | 2 | Operating voltage	3.5-24V withg a maximum current	of 10A |
 | servo motor | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 N*m (at 12.0V, 1.4A, 1.071 Nm/A) |
+| battery | ZYGY <a href="https://www.amazon.de/dp/B0DZ65LMPT?ref=ppx_yo2ov_dt_b_fed_asin_title">11.1V 2000mAh</a> | 2 | already includes protection. Need adapters for: T-plug => XT60 Male => DC 5.5mm x 2.5mm Male | 
+| battery | Palogreen <a href="https://www.amazon.de/dp/B0DZ65LMPT">12.6V DC Akku 2800mAh</a> | 4 | already includes protection. One for powering the rasp pi 5, and several backups | 
+| power supply | SMPS | 1 | 12V/5A to test 1 leg | 
+|  |  |  |  | 
 | battery | <a href="https://secure.reichelt.com/de/en/industrial_cell_18650_3_6_v_2600_mah_unprotected_pack_of_2-p261054.html">SON 18650 VTC5A</a> | 9 | Operating voltage 3.6-3.7V with a discharge max of 10A each; need 3 parallel of 3 in series | 
 | battery management system | <a href="https://powercells.de/3s-40a-12-6v-cell-li-on-akku-batterie-schutz-platine-bms-pcb-lithium-protection.html?language=en">3S 40A 12.6V BSM PCB</a> | 3 | plan to use one for each of the 3-series battery pack | 
-| power supply | SMPS | 1 | 12V/5A to test 1 leg | 
 | controller | <a href="https://emanual.robotis.com/docs/en/parts/controller/opencr10/">OpenCR 1.0</a> | 1 | This is not necessary if a Rasp Pi is already in use |
 
 #### XL430-W250-T dimensions
