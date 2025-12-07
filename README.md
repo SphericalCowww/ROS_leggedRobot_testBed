@@ -67,7 +67,7 @@ The current design has many flaws, but here is the first assembly:
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.png" width="300">
 
-<video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly1Leg2.mp4" controls width="300"></video>
+<video src="https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg1.mp4" controls width="300"></video> <video src="https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg2.mp4" controls width="300"></video>
 
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
@@ -166,6 +166,8 @@ Then run the following:
     ## Fixed Frame: base_link
     ## Add: RobotModel
     ## RobotModel: Description Topic: /robot_description
+
+<video src="https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/rViz1Leg.mp4" controls width="300"></video> 
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
