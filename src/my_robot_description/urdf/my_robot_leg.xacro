@@ -23,7 +23,7 @@
         <xacro:lazy_inertia m="1.0"/>
     </link>
 
-    <!-- ============================ --> 
+    <!-- ============================================================================================================================== --> 
     <link name="servo1_holder">
         <visual>
             <geometry>
@@ -93,7 +93,7 @@
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 
-    <!-- ============================ -->
+    <!-- ============================================================================================================================== --> 
     <link name="servo2_holder">
         <visual>
             <geometry>
@@ -163,7 +163,7 @@
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 
-    <!-- ============================ -->
+    <!-- ============================================================================================================================== -->
     <link name="inner_thigh">
         <visual>
             <geometry>
@@ -235,16 +235,16 @@
             <geometry>
                 <mesh filename="package://my_robot_description/mesh/CADv0/_mod_calfJoint-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
-            <origin xyz="0 0 0" rpy="${-urdf_pi/2} 0 ${urdf_pi/2}"/>
+            <origin xyz="0 0 0" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
             <material name="white"/>
         </visual>
         <collision>
             <geometry>
                 <box size="0.022 0.051 0.0065"/>
             </geometry>
-            <origin xyz="-0.0005 0 -0.0145" rpy="${-urdf_pi/2} 0 ${urdf_pi/2}"/>
+            <origin xyz="-0.0005 0 0.0145" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
         </collision>
-        <xacro:box_inertia m="0.0015" x="0.022" y="0.051" z="0.0065" o_xyz="-0.0005 0 -0.0145" o_rpy="${-urdf_pi/2} 0 ${urdf_pi/2}"/>
+        <xacro:box_inertia m="0.0015" x="0.022" y="0.051" z="0.0065" o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
     </link>
     <joint name="servo3_calfJoint" type="revolute">
         <parent link="servo3"/>
@@ -261,20 +261,21 @@
                 <mesh filename="package://my_robot_description/mesh/CADv0/calfFeet-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <material name="purple"/>
-            <origin xyz="0 -0.008 -0.035" rpy="0 ${-urdf_pi/2} 0"/>
+            <origin xyz="-0.004 -0.008 0.035" rpy="0 ${urdf_pi/2} 0"/>
         </visual>
         <collision>
             <geometry>
                 <box size="0.150 0.016 0.004"/>
             </geometry>
-            <origin xyz="-0.002 ${-0.008+0.008} ${-0.035+0.080}" rpy="0 ${-urdf_pi/2} 0"/>
+            <origin xyz="-0.002 ${-0.008+0.008} ${0.035-0.080}" rpy="0 ${-urdf_pi/2} 0"/>
         </collision>
-        <xacro:box_inertia m="0.02" x="0.150" y="0.016" z="0.004" o_xyz="${-servo_z/2-0.002-0.0025-0.002} ${-0.008+0.008} ${-0.035+0.080}" o_rpy="0 ${-urdf_pi/2} 0"/>
+        <xacro:box_inertia m="0.02" x="0.150" y="0.016" z="0.004" 
+                           o_xyz="${-servo_z/2-0.002-0.0025-0.002} ${-0.008+0.008} ${0.035-0.080}" o_rpy="0 ${-urdf_pi/2} 0"/>
     </link>
     <joint name="servo3_calfFeet" type="revolute">
         <parent link="servo3"/>
         <child  link="calfFeet"/>
-        <origin xyz="${-servo_z/2-0.002-0.0025} -0.101 0" rpy="0 0 0"/>
+        <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.101+0.004} 0" rpy="0 0 0"/>
         <axis xyz="1 0 0"/>
         <mimic joint="servo3_calfJoint" multiplier="1.0" offset="0.0"/>
         <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
@@ -300,11 +301,8 @@
     <joint name="calfFeet_calfSphere" type="fixed">
         <parent link="calfFeet"/>
         <child  link="calfSphere"/>
-        <origin xyz="-0.002 0.004 ${0.150-0.035}" rpy="0 0 0"/>
+        <origin xyz="-0.002 0.004 ${-0.150+0.035}" rpy="0 0 0"/>
     </joint>
-
-    
-
 </robot>
 <!-- ================================================================================================================================== -->
 
