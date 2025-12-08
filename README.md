@@ -185,6 +185,7 @@ Launch the MoveIt assistance:
     # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_join => Parent Frame Name: world => Joint Type: fixed => Save
     # Planning Groups => Add Group => Group Name: leg1 => Kinametic Solver: kdl_kinematics_plugin => Add Joints => choose all and right arrow => Save
     # Robot Poses => Add Pose => all joints at 0 => Pose Name: home => Save: can add a few other ones for debugging
+    # End Effectors => End Effector Name: feetSphere => End Effector Group: leg1 => Parent Lin: feetSphere => Parent Group: leg1 => Save
     # ros2_control URDF Model => position for Command Interfaces and State Interfaces => Add interfaces
     # ROS2 Controllers => Auto Add JointTrajectoryController
     # Moveit Controllers => Auto Add FollowJointsTrajectory
@@ -194,7 +195,7 @@ Launch the MoveIt assistance:
 Fix the following file:
 
     # src/my_robot_moveit_config/config/joint_limits.yaml => max_velocity: 1.0, has_acceleration_limits: true, max_acceleration: 1.0 (need to be float)
-    # src/my_robot_moveit_config/config/moveit_controllers.yaml => add the following under arm_controller: 
+    # src/my_robot_moveit_config/config/moveit_controllers.yaml => add the following under leg1_controller: 
     ## action_ns: follow_joint_trajectory
     ## default: true
     # src/my_robot_moveit_config/config/initial_positions.yaml => servo1_servo1_padding: 3.14, servo2_servo2_padding: 3.14, servo3_calfJoint: 3.14
@@ -207,7 +208,7 @@ Launch the demo:
     # ignore: [move_group-3] [ERROR] [1758361830.007872451] [move_group.moveit.moveit.ros.occupancy_map_monitor]: No 3D sensor plugin(s) defined for octomap updates
     # ignore: [rviz2-4] [ERROR] [1758361834.128908606] [moveit_143394722.moveit.ros.motion_planning_frame]: Action server: /recognize_objects not available
     # MotionPlanning:
-    ## Planning Group: arm
+    ## Planning Group: leg1
     ## Goal State: pose1
     ## Plan
     ## Execute
