@@ -9,6 +9,23 @@
     <link name="base_link">
         <visual>
             <geometry>
+                <box size="0.052 0.096 0.06"/>
+            </geometry>
+            <origin xyz="0 0 -0.03" rpy="0 0 0"/>
+            <material name="grey"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.052 0.096 0.06"/>
+            </geometry>
+            <origin xyz="0 0 -0.03" rpy="0 0 0"/>
+        </collision>
+        <xacro:lazy_inertia m="10.0"/>
+    </link>
+
+    <link name="main_board">
+        <visual>
+            <geometry>
                 <mesh filename="package://my_robot_description/mesh/CADv0/_mod_basePlate-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -16,12 +33,17 @@
         </visual>
         <collision>
             <geometry>
-                <box size="0.132 0.096 0.004"/>
+                <box size="0.132 0.036 0.004"/>
             </geometry>
-            <origin xyz="0 -0.012 0.002" rpy="0 0 0"/>
+            <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
         <xacro:lazy_inertia m="1.0"/>
     </link>
+    <joint name="base_link_main_board" type="fixed">
+        <parent link="base_link"/>
+        <child  link="main_board"/>
+        <origin xyz="0 0.012 -0.004" rpy="0 0 0"/>
+    </joint>
 
     <!-- ============================================================================================================================== --> 
     <link name="servo1_holder">
@@ -40,8 +62,8 @@
         </collision>
         <xacro:box_inertia m="0.01" x="0.037" y="0.032" z="0.014" o_xyz="0 0 0.007" o_rpy="0 0 ${urdf_pi/2}"/>
     </link> 
-    <joint name="base_link_servo1_holder" type="fixed">
-        <parent link="base_link"/>
+    <joint name="main_board_servo1_holder" type="fixed">
+        <parent link="main_board"/>
         <child  link="servo1_holder"/>
         <origin xyz="-0.050 0.018 0.004" rpy="0 0 0"/>
     </joint>
