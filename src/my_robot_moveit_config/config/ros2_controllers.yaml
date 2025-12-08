@@ -17,7 +17,7 @@ legs_controller:
       - servo2_servo2_padding
       - servo3_calfJoint
     command_interfaces:
-      - position
+      []
     state_interfaces:
-      - position
+      []
     allow_nonzero_velocity_at_trajectory_end: true
