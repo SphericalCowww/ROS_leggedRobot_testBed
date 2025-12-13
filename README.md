@@ -36,6 +36,10 @@ Goal: quadruped robot dog
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="600">
 
+When testing, the 11.1V battery can be teed to power both Raspberry Pi 5 and 3 servos. However, Raspberry Pi 5 does show low power when also turning on the monitor with HDMI connection.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystemPhoto.png" width="200">
+
 ### setting the servo IDs
 
 Connecting servo to U2D2 according to <a href="https://www.youtube.com/watch?v=FIj_NULYOKQ">YouTube</a>:
