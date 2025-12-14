@@ -252,31 +252,6 @@
         <origin xyz="${servo_y/2-0.006-0.0025} -0.004 0" rpy="0 0 0"/>
     </joint>
 
-    <link name="calfJoint">
-        <visual>
-            <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_calfJoint-Body.stl" scale="0.001 0.001 0.001"/>
-            </geometry>
-            <origin xyz="0 0 0" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
-            <material name="white"/>
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.022 0.051 0.0065"/>
-            </geometry>
-            <origin xyz="-0.0005 0 0.0145" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
-        </collision>
-        <xacro:box_inertia m="0.0015" x="0.022" y="0.051" z="0.0065" o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
-    </link>
-    <joint name="servo3_calfJoint" type="revolute">
-        <parent link="servo3"/>
-        <child  link="calfJoint"/>
-        <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.01-0.0025/2} 0" rpy="0 0 0"/>
-        <axis xyz="1 0 0"/>
-        <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
-        <dynamics friction="0.05" damping="0.1"/>
-    </joint>
-
     <link name="calfFeet">
         <visual>
             <geometry>
@@ -299,7 +274,32 @@
         <child  link="calfFeet"/>
         <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.101+0.004} 0" rpy="0 0 0"/>
         <axis xyz="1 0 0"/>
-        <mimic joint="servo3_calfJoint" multiplier="1.0" offset="0.0"/>
+        <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
+        <dynamics friction="0.05" damping="0.1"/>
+    </joint>
+
+    <link name="calfJoint">
+        <visual>
+            <geometry>
+                <mesh filename="package://my_robot_description/mesh/CADv0/_mod_calfJoint-Body.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.022 0.051 0.0065"/>
+            </geometry>
+            <origin xyz="-0.0005 0 0.0145" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
+        </collision>
+        <xacro:box_inertia m="0.0015" x="0.022" y="0.051" z="0.0065" o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
+    </link>
+    <joint name="servo3_calfJoint" type="revolute">
+        <parent link="servo3"/>
+        <child  link="calfJoint"/>
+        <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.01-0.0025/2} 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <mimic joint="servo3_calfFeet" multiplier="1.0" offset="0.0"/>
         <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
         <dynamics friction="0.05" damping="0.1"/>
     </joint>

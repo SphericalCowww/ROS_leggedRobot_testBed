@@ -20,10 +20,10 @@
                   <param name="initial_value">${initial_positions['servo2_servo2_padding']}</param>
                 </state_interface>
             </joint>
-            <joint name="servo3_calfJoint">
+            <joint name="servo3_calfFeet">
                 <command_interface name="position"/>
                 <state_interface name="position">
-                  <param name="initial_value">${initial_positions['servo3_calfJoint']}</param>
+                  <param name="initial_value">${initial_positions['servo3_calfFeet']}</param>
                 </state_interface>
             </joint>
 

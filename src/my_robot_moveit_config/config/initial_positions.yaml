@@ -3,4 +3,4 @@
 initial_positions:
   servo1_servo1_padding: 3.14
   servo2_servo2_padding: 3.14
-  servo3_calfJoint: 3.14
+  servo3_calfFeet: 3.14
