@@ -186,10 +186,10 @@ Launch the MoveIt assistance:
     # Browse => src/my_robot_description/urdf/my_robot.urdf.xacro => Load Files
     # Start Screen: can toggle visual/collision
     # Self-Collisions => Generate Collision Matrix: removes all never-in-contact and adjacent collisions
-    # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_join => Parent Frame Name: world => Joint Type: fixed => Save
-    # Planning Groups => Add Group => Group Name: leg1 => Kinametic Solver: kdl_kinematics_plugin => Add Joints => choose all and right arrow => Save
+    # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_joint => Parent Frame Name: world => Joint Type: floating => Save
+    # Planning Groups => Add Group => Group Name: leg1 => Kinametic Solver: kdl_kinematics_plugin => Add Joints => 
+    ## choose with right arrow "servo1_servo1_padding", "servo2_servo2_padding", "servo3_calfFeet", and "calfFeet_calfSphere" => Save
     # Robot Poses => Add Pose => all joints at 0 => Pose Name: home => Save: can add a few other ones for debugging
-    # End Effectors => End Effector Name: feetSphere => End Effector Group: leg1 => Parent Lin: feetSphere => Parent Group: leg1 => Save
     # ros2_control URDF Model => position for Command Interfaces and State Interfaces => Add interfaces
     # ROS2 Controllers => Auto Add JointTrajectoryController
     # Moveit Controllers => Auto Add FollowJointsTrajectory
@@ -203,6 +203,10 @@ Fix the following file:
     ## action_ns: follow_joint_trajectory
     ## default: true
     # src/my_robot_moveit_config/config/initial_positions.yaml => servo1_servo1_padding: 3.14, servo2_servo2_padding: 3.14, servo3_calfJoint: 3.14
+    # src/my_robot_moveit_config/config/my_robot.srdf => include only the following in <group name="leg1">:
+    ## <group name="leg1">
+    ##     <chain base_link="base_link" tip_link="calfSphere"/>
+    ## </group>
 
 Launch the demo:
 
