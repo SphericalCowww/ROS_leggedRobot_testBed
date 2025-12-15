@@ -220,5 +220,11 @@ Launch the demo:
     ## Goal State: pose1
     ## Plan
     ## Execute
+
+Note that to move the motion wheel in rViz:
+
+    # toggle: Approx IK Soluations
+    # also test if needed, toggle: Use Cartesian Path 
+
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
