@@ -36,10 +36,10 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_state_broadcaster"],
     )
-    leg_controller_spawner = Node(
+    leg1_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["leg_controller"],
+        arguments=["leg1_controller"],
     )
     
     moveit_launcher = IncludeLaunchDescription(
@@ -62,7 +62,7 @@ def generate_launch_description():
         robot_state_publisher_node,
         control_node,
         joint_state_broadcaster_spawner,
-        leg_controller_spawner,
+        leg1_controller_spawner,
         moveit_launcher,
         commander_node,
         rviz_node,

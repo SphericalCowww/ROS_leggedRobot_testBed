@@ -59,11 +59,11 @@ def generate_launch_description():
             "joint_state_broadcaster",
         ],
     )
-    leg_controller_spawner = Node(
+    leg1_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
-            "leg_controller",
+            "leg1_controller",
         ],
     )
    
@@ -90,7 +90,7 @@ def generate_launch_description():
         gz_ros2_bridge,
         robot_state_publisher_node,
         joint_state_broadcaster_spawner,
-        leg_controller_spawner,
+        leg1_controller_spawner,
         moveit_launcher,
         commander_node,
         #rviz_node,
