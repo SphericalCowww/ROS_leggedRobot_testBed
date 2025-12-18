@@ -230,11 +230,18 @@ Note that to move the motion wheel in rViz:
 
     cp src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
     cp src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
+    # modify the following line in my_robot.ros2_control.xacro:
+    ## remove: <xacro:property name="initial_positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
+    ## for all servos, update to: <param name="initial_value">3.14</param> 
     # adding the following line in my_robot.urdf.xacro:
     ## <xacro:include filename="my_robot.ros2_control.xacro" />
     colcon build
     source install/setup.bash
     ros2 launch my_robot_bringup my_robot.launch.py
+    # NOTE: Sometimes it takes a second try to have everything registered
+    # Add => MotionPlanning
+    ## Context => Planning Library => ompl
+    ## Planning => Goal State: pose1 => Plan => Execute
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
