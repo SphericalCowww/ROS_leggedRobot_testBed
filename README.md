@@ -208,7 +208,7 @@ Fix the following file:
     ##     <chain base_link="base_link" tip_link="calfSphere"/>
     ## </group>
 
-Launch the demo:
+#### Launch the demo:
 
     colcon build
     source install/setup.bash
@@ -225,6 +225,16 @@ Note that to move the motion wheel in rViz:
 
     # toggle: Approx IK Soluations
     # also test if needed, toggle: Use Cartesian Path 
+
+#### Launch with a proper launch file:
+
+    cp src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
+    cp src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
+    # adding the following line in my_robot.urdf.xacro:
+    ## <xacro:include filename="my_robot.ros2_control.xacro" />
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup my_robot.launch.py
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
