@@ -39,12 +39,9 @@ namespace my_robot_namespace {
             bool dxl_return_ = false;
             int32_t dxl_position_ = 0;
 
-            int joint1_servo_channel_;
-            int joint4_servo_channel_;
-            int joint6_servo_channel_;
-            double joint2_position_;
-            double joint3_position_;
-            double joint5_position_;
+            int servo1_channel_;
+            int servo2_channel_;
+            int servo3_channel_;
 
             bool write_first_call_ = true;
             rclcpp::Time start_time_;

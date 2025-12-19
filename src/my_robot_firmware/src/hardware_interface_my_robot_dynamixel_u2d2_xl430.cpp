@@ -4,6 +4,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "my_robot_firmware/hardware_interface_my_robot_dynamixel_u2d2_xl430.hpp"
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace my_robot_namespace {
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_init
@@ -24,9 +26,9 @@ namespace my_robot_namespace {
             RCLCPP_INFO(node_->get_logger(), "Initialize with baud rate: %d", BAUD_RATE);
         } 
 
-        joint1_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint1_servo_channel"));
-        joint4_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint4_servo_channel"));
-        joint6_servo_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("joint6_servo_channel"));
+        servo1_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo1_servo1_padding"));
+        servo2_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo2_servo2_padding"));
+        servo3_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo3_calfFeet"));
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 
@@ -42,17 +44,14 @@ namespace my_robot_namespace {
         rclcpp::Duration lifetime = time - start_time_;
     
         // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        double joint1_position = channel_read_position_(joint1_servo_channel_); 
-        double joint4_position = channel_read_position_(joint4_servo_channel_);
-        double joint6_position = channel_read_position_(joint6_servo_channel_);
-        set_state("joint1/position", joint1_position);
-        set_state("joint2/position", joint2_position_);
-        set_state("joint3/position", joint3_position_);
-        set_state("joint4/position", joint4_position);
-        set_state("joint5/position", joint5_position_);
-        set_state("joint6/position", joint6_position);
-        RCLCPP_INFO(node_->get_logger(), "read position (joint1, joint4, joint6): (%f, %f, %f)", 
-                    joint1_position, joint4_position, joint6_position);
+        double servo1_position = channel_read_position_(servo1_channel_); 
+        double servo2_position = channel_read_position_(servo2_channel_);
+        double servo3_position = channel_read_position_(servo3_channel_);
+        set_state("servo1_servo1_padding/position", servo1_position);
+        set_state("servo2_servo2_padding/position", servo2_position);
+        set_state("servo3_calfFeet/position",       servo3_position);
+        RCLCPP_INFO(node_->get_logger(), "read position (servo1, servo2, servo3): (%f, %f, %f)", 
+                    servo1_position, servo2_position, servo3_position);
         return hardware_interface::return_type::OK;
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::write
@@ -63,26 +62,19 @@ namespace my_robot_namespace {
         (void) period; 
         
         // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        double joint1_position = get_command("joint1/position");
-        joint2_position_       = get_command("joint2/position");
-        joint3_position_       = get_command("joint3/position");
-        double joint4_position = get_command("joint4/position");
-        joint5_position_       = get_command("joint5/position");
-        double joint6_position = get_command("joint6/position");
-        if (std::isnan(joint1_position) | std::isnan(joint2_position_) | std::isnan(joint3_position_) |
-            std::isnan(joint4_position) | std::isnan(joint5_position_) | std::isnan(joint6_position)) {
-            joint1_position  = 0.0;
-            joint2_position_ = 0.0;
-            joint3_position_ = 0.0;
-            joint4_position  = 0.0;
-            joint5_position_ = 0.0;
-            joint6_position  = 0.0;
+        double servo1_position = get_command("servo1_servo1_padding/position");
+        double servo2_position = get_command("servo2_servo2_padding/position");
+        double servo3_position = get_command("servo3_calfFeet/position");
+        if (std::isnan(servo1_position) | std::isnan(servo2_position) | std::isnan(servo3_position)) {
+            servo1_position = DXL_PI;
+            servo2_position = DXL_PI;
+            servo3_position = DXL_PI;
         }
-        channel_set_position_(joint1_servo_channel_, joint1_position);
-        channel_set_position_(joint4_servo_channel_, joint4_position);
-        channel_set_position_(joint6_servo_channel_, joint6_position);
-        RCLCPP_INFO(node_->get_logger(), "write position (joint1, joint4, joint6): (%f, %f, %f)",
-                    joint1_position, joint4_position, joint6_position);
+        channel_set_position_(servo1_channel_, servo1_position);
+        channel_set_position_(servo2_channel_, servo2_position);
+        channel_set_position_(servo3_channel_, servo3_position);
+        RCLCPP_INFO(node_->get_logger(), "write position (servo1, servo2, servo3): (%f, %f, %f)",
+                    servo1_position, servo2_position, servo3_position);
         return hardware_interface::return_type::OK;
     }   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,15 +83,15 @@ namespace my_robot_namespace {
     {
         RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure()");
         (void) previous_state;
-        channel_init_(joint1_servo_channel_);
+        channel_init_(servo1_channel_);
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
-        channel_init_(joint4_servo_channel_);
+        channel_init_(servo2_channel_);
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
-        channel_init_(joint6_servo_channel_);
+        channel_init_(servo3_channel_);
         if (dxl_return_ == false) {
             return hardware_interface::CallbackReturn::ERROR;
         }
@@ -110,16 +102,13 @@ namespace my_robot_namespace {
     {
         RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_activate()");
         (void) previous_state;
-        set_state("joint1/position", 0.0);
-        set_state("joint2/position", 0.0);
-        set_state("joint3/position", 0.0);
-        set_state("joint4/position", 0.0);
-        set_state("joint5/position", 0.0);
-        set_state("joint6/position", 0.0);
+        set_state("servo1_servo1_padding/position", DXL_PI);
+        set_state("servo2_servo2_padding/position", DXL_PI);
+        set_state("servo3_calfFeet/position",       DXL_PI);
  
-        channel_set_position_(joint1_servo_channel_, 0);
-        channel_set_position_(joint4_servo_channel_, 0);
-        channel_set_position_(joint6_servo_channel_, 0);
+        channel_set_position_(servo1_channel_, DXL_PI);
+        channel_set_position_(servo2_channel_, DXL_PI);
+        channel_set_position_(servo3_channel_, DXL_PI);
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_deactivate
@@ -127,9 +116,9 @@ namespace my_robot_namespace {
     {
         RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_deactivate()");
         (void) previous_state;
-        channel_set_position_(joint1_servo_channel_, 0);
-        channel_set_position_(joint4_servo_channel_, 0);
-        channel_set_position_(joint6_servo_channel_, 0);
+        channel_set_position_(servo1_channel_, DXL_PI);
+        channel_set_position_(servo2_channel_, DXL_PI);
+        channel_set_position_(servo3_channel_, DXL_PI);
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
