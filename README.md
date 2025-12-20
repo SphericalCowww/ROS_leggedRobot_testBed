@@ -125,24 +125,7 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 topic pub -1 /arm_set_pose my_robot_interface/msg/MaRobotArmPoseTarget "{x: 0.7, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0, use_cartesian_path: false}"
 
 ### testing the driver with ros2_control and MoveIt
-Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>ma_robot_namespace::HardwareInterfaceU2D2_ma_robot</plugin>``. The latter plugin type can be found at the bottom of ``src/my_robot_firmware/hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml``.
-
-  * src/my_robot_**bringup**/launch/**ma_robot.with_commander.launch.py**
-    * src/my_robot_description/urdf/ma_robot.urdf.xacro
-      * src/my_robot_description/urdf/common_properties.xacro
-      * src/my_robot_description/urdf/ma_robot_arm.xacro.xacro
-      * src/my_robot_description/urdf/ma_robot_gripper.xacro.xacro
-      * src/my_robot_**description**/urdf/**ma_robot.ros2_control.xacro**
-        * src/my_robot_firmware/hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml
-        * src/my_robot_**firmware**/include/my_robot_firmware/**hardware_interface_ma_robot_dynamixel_u2d2_xl430.hpp**
-    * src/my_robot_**bringup**/config/**ma_robot_controllers.yaml**
-      * joint_trajectory_controller/JointTrajectoryController
-    * src/**ma_robot_moveit_config**/launch/**move_group.launch.py**
-      * src/ma_robot_moveit_config/config...
-    * src/my_robot_commander/src/ma_robot_commander.cpp
-    * src/my_robot_description/rviz/ma_robot.urdf_config.rviz
-
-Then run the following:
+Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>ma_robot_namespace::HardwareInterfaceU2D2_ma_robot</plugin>``. The latter plugin type can be found at the bottom of ``src/my_robot_firmware/hardware_interface_ma_robot_dynamixel_u2d2_xl430.xml``. Then run the following:
 
     colcon build
     source install/setup.bash
@@ -157,7 +140,7 @@ Then run the following:
     ros2 topic info /gripper_set_open
     ros2 topic pub -1 /gripper_set_open example_interfaces/msg/Bool "{data: false}"
 
-## Testing ROS2 interface with 1 leg
+## Launch ROS2 interface with 1 leg
 
 ### launch urdf
 
@@ -173,7 +156,7 @@ Then run the following:
 
 [Video demo](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/rViz1Leg.mp4)
 
-### moveit2 setup assistance with an arm
+### moveit2 setup assistance with a leg
 
 Launch the MoveIt assistance:
 
@@ -208,7 +191,7 @@ Fix the following file:
     ##     <chain base_link="base_link" tip_link="calfSphere"/>
     ## </group>
 
-#### Launch the demo:
+#### launch the demo:
 
     colcon build
     source install/setup.bash
@@ -226,7 +209,7 @@ Note that to move the motion wheel in rViz:
     # toggle: Approx IK Soluations
     # also test if needed, toggle: Use Cartesian Path 
 
-#### Launch with a proper launch file:
+#### launch with a proper launch file:
 
     cp src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
     cp src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
@@ -242,6 +225,38 @@ Note that to move the motion wheel in rViz:
     # Add => MotionPlanning
     ## Context => Planning Library => ompl
     ## Planning => Goal State: pose1 => Plan => Execute
+
+### launch with hardware, command line enabled
+Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>my_robot_namespace::HardwareInterfaceU2D2_my_robot</plugin>``. 
+
+  * src/my_robot_**bringup**/launch/**my_robot.with_commander.launch.py**
+    * src/my_robot_description/urdf/my_robot.urdf.xacro
+      * src/my_robot_description/urdf/common_properties.xacro
+      * src/my_robot_description/urdf/my_robot_arm.xacro.xacro
+      * src/my_robot_description/urdf/my_robot_gripper.xacro.xacro
+      * src/my_robot_**description**/urdf/**my_robot.ros2_control.xacro**
+        * src/my_robot_firmware/hardware_interface_my_robot_dynamixel_u2d2_xl430.xml
+        * src/my_robot_**firmware**/include/my_robot_firmware/**hardware_interface_my_robot_dynamixel_u2d2_xl430.hpp**
+    * src/my_robot_**bringup**/config/**my_robot_controllers.yaml**
+      * joint_trajectory_controller/JointTrajectoryController
+    * src/**my_robot_moveit_config**/launch/**move_group.launch.py**
+      * src/my_robot_moveit_config/config...
+    * src/my_robot_commander/src/**my_robot_commander.cpp**
+      * src/my_robot_interface/msg/MyRobotLeg1PoseTarget.msg
+    * src/my_robot_description/rviz/my_robot.urdf_config.rviz
+
+    colcon build
+    source install/setup.bash
+    sudo chmod a+rw /dev/ttyUSB0
+    ros2 launch my_robot_bringup my_robot.launch.with_commander.py
+    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
+
+### launch with gazebo, command line enabled
+
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup my_robot.launch.with_commander.py
+    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
