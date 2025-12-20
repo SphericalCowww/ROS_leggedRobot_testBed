@@ -86,7 +86,7 @@ class ma_robot_commander_class
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
-            interface->plan(plan);
+            //interface->plan(plan);
             bool success = (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
             if (success == true) {
                 interface->execute(plan);

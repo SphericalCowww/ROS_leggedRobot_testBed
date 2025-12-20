@@ -24,9 +24,9 @@ namespace my_robot_namespace {
             RCLCPP_INFO(node_->get_logger(), "Initialize with baud rate: %d", BAUD_RATE);
         } 
 
-        servo1_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo1_servo1_padding"));
-        servo2_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo2_servo2_padding"));
-        servo3_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo3_calfFeet"));
+        servo1_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
+        servo2_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
+        servo3_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 

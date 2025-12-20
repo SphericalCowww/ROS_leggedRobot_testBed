@@ -16,7 +16,10 @@ find_package(my_robot_interface REQUIRED)
 add_executable(ma_robot_commander src/ma_robot_commander.cpp)
 ament_target_dependencies(ma_robot_commander rclcpp moveit_ros_planning_interface example_interfaces my_robot_interface)
 
-install(TARGETS ma_robot_commander
+add_executable(my_robot_commander src/my_robot_commander.cpp)
+ament_target_dependencies(my_robot_commander rclcpp moveit_ros_planning_interface example_interfaces my_robot_interface)
+
+install(TARGETS ma_robot_commander my_robot_commander
   DESTINATION lib/${PROJECT_NAME}
 )
 

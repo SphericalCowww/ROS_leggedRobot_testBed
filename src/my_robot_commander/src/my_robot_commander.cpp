@@ -24,6 +24,7 @@ class my_robot_commander_class
             leg1_interface_ = std::make_shared<MoveGroupInterface>(node_, "leg1");
             leg1_interface_->setMaxVelocityScalingFactor(1.0);
             leg1_interface_->setMaxAccelerationScalingFactor(1.0);
+            leg1_interface_->setEndEffectorLink("calfSphere");
 
             leg1_named_subscriber_ = node_->create_subscription<ros_string> ("leg1_set_named", 10,
                 std::bind(&my_robot_commander_class::leg1NamedCallback, this, _1));            
@@ -45,7 +46,7 @@ class my_robot_commander_class
         void leg1SetPoseTarget(double x, double y, double z, bool use_cartesian_path=false) {
             tf2::Quaternion quaternionObj;
             geometry_msgs::msg::PoseStamped target_pose;
-            target_pose.header.frame_id = "base_link";    
+            target_pose.header.frame_id = leg1_interface_->getPlanningFrame(); 
 
             target_pose.pose.position.x = x;
             target_pose.pose.position.y = y;
@@ -77,10 +78,12 @@ class my_robot_commander_class
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
-            interface->plan(plan);
+            //interface->plan(plan);
             bool success = (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
             if (success == true) {
                 interface->execute(plan);
+            } else {
+                RCLCPP_WARN(node_->get_logger(), "planAndExecute(): planning failed");
             }
         }
 
@@ -90,6 +93,7 @@ class my_robot_commander_class
         }
         void leg1JointCallback(const ros_array::SharedPtr msg) {
             RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1JointCallback()");
+            auto numberOfJoints = leg1_interface_->getJointNames().size();
             msg->layout.dim.resize(1);
             msg->layout.dim[0].size   = msg->data.size();
             msg->layout.dim[0].stride = msg->data.size();
@@ -98,8 +102,9 @@ class my_robot_commander_class
                 RCLCPP_WARN(node_->get_logger(), "leg1JointCallback(): message empty");
                 return;
             }
-            else if (msg->layout.dim[0].size != 6) {
-                RCLCPP_WARN(node_->get_logger(), "leg1JointCallback(): incorrect input dimension, expect 6");
+            else if (msg->layout.dim[0].size != numberOfJoints) {
+                RCLCPP_WARN(node_->get_logger(), "leg1JointCallback(): incorrect input dimension, expect %li",
+                            numberOfJoints);
                 return;
             }
             leg1SetJointTarget(msg->data);
@@ -111,7 +116,7 @@ class my_robot_commander_class
         
         std::shared_ptr<rclcpp::Node> node_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
-        double cartesianConstraintStepsize_ = 0.01;     //meter
+        double cartesianConstraintStepsize_ = 0.0005;     //meter
 
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
