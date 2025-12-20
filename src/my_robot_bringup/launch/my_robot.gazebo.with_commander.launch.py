@@ -43,7 +43,7 @@ def generate_launch_description():
         parameters=[{"config_file": gazebo_config_path}],
     )
   
-    robot_description  = ParameterValue(Command(['xacro ', urdf_path]), value_type=str) 
+    robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str) 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",

@@ -162,7 +162,7 @@ namespace ma_robot_namespace {
     }
     double HardwareInterfaceU2D2_ma_robot::channel_read_position_(int channel) {
         dxl_return_ = dxl_wb_.itemRead(channel, "Present_Position", &dxl_position_, &log_);
-        double position = (double) ((dxl_position_-(MAX_POSITION-MIN_POSITION)/2)*2*DXL_PI/(MAX_POSITION-MIN_POSITION));
+        double position = (double) (dxl_position_-(MAX_POSITION-MIN_POSITION)/2)*2*DXL_PI/(MAX_POSITION-MIN_POSITION);
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to read position!");
             return -1.0;
