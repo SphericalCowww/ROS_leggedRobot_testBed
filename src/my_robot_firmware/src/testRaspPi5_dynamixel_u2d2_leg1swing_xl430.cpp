@@ -26,9 +26,11 @@ int main(int argc, char **argv) {
     uint16_t model_number = 0;
     const char *log;
     bool dxl_return = false;
-    int32_t dxl_position1 = 0;
-    int32_t dxl_position2 = 0; 
-    int32_t dxl_position3 = 0; 
+    int32_t half_position = (MAX_POSITION + MIN_POSITION)/2;
+    int32_t dxl_position1 = half_position;
+    int32_t dxl_position2 = half_position; 
+    int32_t dxl_position3 = half_position; 
+    int32_t swingN = 10;
 
     dxl_return = dxl_wb.init(PORTNAME, BAUDRATE, &log);
     if (dxl_return == false) {
@@ -58,8 +60,7 @@ int main(int argc, char **argv) {
         RCLCPP_INFO(node->get_logger(), "Joining position mode for id: %d, model_number : %d\n", DXL_ID1, model_number);
     }
 
-    swingN = 10
-    for (int swingIter = 0; swingIter < swingN; Iter++) {
+    for (int swingIter = 0; swingIter < swingN; swingIter++) {
         RCLCPP_INFO(node->get_logger(), "Swing Iter: %i", swingIter);
         // Sweep from MIN_POSITION to MAX_POSITION
         for (int position = (half_position - 200); position <= (half_position + 200); position += SWEEP_STEP) {
@@ -85,7 +86,6 @@ int main(int argc, char **argv) {
         }
         // Sweep back from MAX_POSITION to MIN_POSITION
     
-        int32_t half_position = (MAX_POSITION + MIN_POSITION)/2
         for (int position = (half_position + 200); position >= (half_position - 200); position -= SWEEP_STEP) {
             dxl_return = dxl_wb.goalPosition(DXL_ID1, (int32_t) position);
             dxl_wb.goalPosition(DXL_ID2, (int32_t) position);

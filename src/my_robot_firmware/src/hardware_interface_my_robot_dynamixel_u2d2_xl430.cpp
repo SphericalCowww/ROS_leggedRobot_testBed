@@ -139,7 +139,7 @@ namespace my_robot_namespace {
         }
     }
     void HardwareInterfaceU2D2_my_robot::channel_set_position_(int channel, double position) {
-        dxl_position_ = (int32_t) ((position + DXL_PI)*(MAX_POSITION-MIN_POSITION)/(2*DXL_PI));
+        dxl_position_ = (int32_t) (position*(MAX_POSITION-MIN_POSITION)/(2*DXL_PI)); //int32_t demands full quote
         dxl_return_ = dxl_wb_.goalPosition(channel, dxl_position_); 
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to set position: %f", position);
@@ -149,7 +149,7 @@ namespace my_robot_namespace {
     }
     double HardwareInterfaceU2D2_my_robot::channel_read_position_(int channel) {
         dxl_return_ = dxl_wb_.itemRead(channel, "Present_Position", &dxl_position_, &log_);
-        double position = (double) (dxl_position_-(MAX_POSITION-MIN_POSITION)/2)*2*DXL_PI/(MAX_POSITION-MIN_POSITION);
+        double position = (double) dxl_position_*2*DXL_PI/(MAX_POSITION-MIN_POSITION);
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to read position!");
             return -1.0;

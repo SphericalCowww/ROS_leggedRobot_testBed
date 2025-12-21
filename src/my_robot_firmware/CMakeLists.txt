@@ -20,10 +20,12 @@ include_directories(include)
 ###########################################################################
 add_executable(testRaspPi5_dynamixel_u2d2_channel0_xl430 src/testRaspPi5_dynamixel_u2d2_channel0_xl430.cpp)
 ament_target_dependencies(testRaspPi5_dynamixel_u2d2_channel0_xl430 rclcpp dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox)
-add_executable(testRaspPi5_dynamixel_u2d2_oneleg_xl430 src/testRaspPi5_dynamixel_u2d2_oneleg_xl430.cpp)
-ament_target_dependencies(testRaspPi5_dynamixel_u2d2_oneleg_xl430 rclcpp dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox)
-
-install(TARGETS testRaspPi5_dynamixel_u2d2_channel0_xl430 testRaspPi5_dynamixel_u2d2_oneleg_xl430
+add_executable(testRaspPi5_dynamixel_u2d2_leg1swing_xl430 src/testRaspPi5_dynamixel_u2d2_leg1swing_xl430.cpp)
+ament_target_dependencies(testRaspPi5_dynamixel_u2d2_leg1swing_xl430 rclcpp dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox)
+add_executable(testRaspPi5_dynamixel_u2d2_leg1swipe_xl430 src/testRaspPi5_dynamixel_u2d2_leg1swipe_xl430.cpp)
+ament_target_dependencies(testRaspPi5_dynamixel_u2d2_leg1swipe_xl430 rclcpp dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox)
+ 
+install(TARGETS testRaspPi5_dynamixel_u2d2_channel0_xl430 testRaspPi5_dynamixel_u2d2_leg1swing_xl430 testRaspPi5_dynamixel_u2d2_leg1swipe_xl430
     DESTINATION lib/${PROJECT_NAME}
 )
 
