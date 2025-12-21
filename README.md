@@ -112,10 +112,12 @@ Connect U2D2 to Rasp Pi USB port:
 
     colcon build
     source install/setup.bash
-    sudo chmod a+rw /dev/ttyUSB0                   
-    ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_channel0_xl430 
-    ps -ef | grep testRaspPi5_dynamixel_u2d2_channel0_xl430                 # to kill it before it ends
-    ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_oneleg_xl430 
+    sudo chmod a+rw /dev/ttyUSB0          
+    ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_leg1swing_xl430
+    ps -ef | grep testRaspPi5_dynamixel_u2d2_leg1swing_xl430                 # to kill it before it ends
+    # only when dynamixels are not connected to into a leg: 
+    ## ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_channel0_xl430 
+    ## ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_leg1swipe_xl430
 
 ### testing MoveIt with Gazebo
 
