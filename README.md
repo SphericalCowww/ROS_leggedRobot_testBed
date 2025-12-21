@@ -213,7 +213,8 @@ Note that to move the motion wheel in rViz:
 #### launch with a proper launch file:
 
     cp src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
-    cp src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
+    mv src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
+    rm src/my_robot_moveit_config/config/my_robot.urdf.xacro
     # modify the following line in my_robot.ros2_control.xacro:
     ## remove: <xacro:property name="initial_positions" value="${xacro.load_yaml(initial_positions_file)['initial_positions']}"/>
     ## for all servos, update to: <param name="initial_value">3.14</param> 
