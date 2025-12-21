@@ -246,6 +246,8 @@ Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
       * src/my_robot_interface/msg/MyRobotLeg1PoseTarget.msg
     * src/my_robot_description/rviz/my_robot.urdf_config.rviz
 
+Then run the following:
+
     colcon build
     source install/setup.bash
     sudo chmod a+rw /dev/ttyUSB0
