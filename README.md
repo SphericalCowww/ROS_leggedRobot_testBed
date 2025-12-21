@@ -207,7 +207,8 @@ Fix the following file:
 Note that to move the motion wheel in rViz:
 
     # toggle: Approx IK Soluations
-    # also test if needed, toggle: Use Cartesian Path 
+    # toggle if needed: MotionPlanning => Planned Path => Loop Animation
+    # toggle if needed: Use Cartesian Path 
 
 #### launch with a proper launch file:
 
@@ -226,7 +227,7 @@ Note that to move the motion wheel in rViz:
     ## Context => Planning Library => ompl
     ## Planning => Goal State: pose1 => Plan => Execute
 
-### launch with hardware, command line enabled
+#### launch with hardware, command line enabled
 Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>my_robot_namespace::HardwareInterfaceU2D2_my_robot</plugin>``. 
 
   * src/my_robot_**bringup**/launch/**my_robot.with_commander.launch.py**
@@ -251,7 +252,7 @@ Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
     ros2 launch my_robot_bringup my_robot.launch.with_commander.py
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
-### launch with gazebo, command line enabled
+#### launch with gazebo, command line enabled
 
     colcon build
     source install/setup.bash
