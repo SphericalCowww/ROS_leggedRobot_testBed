@@ -171,7 +171,7 @@ Launch the MoveIt assistance:
     # Browse => src/my_robot_description/urdf/my_robot.urdf.xacro => Load Files
     # Start Screen: can toggle visual/collision
     # Self-Collisions => Generate Collision Matrix: removes all never-in-contact and adjacent collisions
-    # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_joint => Parent Frame Name: world => Joint Type: floating => Save
+    # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_joint => Parent Frame Name: world => Joint Type: fixed => Save
     # Planning Groups => Add Group => Group Name: leg1 => Kinametic Solver: kdl_kinematics_plugin => Add Joints => 
     ## choose with right arrow "servo1_servo1_padding", "servo2_servo2_padding", "servo3_calfFeet", and "calfFeet_calfSphere" => Save
     # Robot Poses => Add Pose => all joints at 0 => Pose Name: home => Save: can add a few other ones for debugging
@@ -192,6 +192,12 @@ Fix the following file:
     ## <group name="leg1">
     ##     <chain base_link="base_link" tip_link="calfSphere"/>
     ## </group>
+    # src/my_robot_moveit_config/config/kinematics.yaml => replace with the following:
+    ##leg1:
+    ##  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+    ##  kinematics_solver_search_resolution: 0.005
+    ##  kinematics_solver_timeout: 0.05
+    ##  kinematics_solver_attempts: 3
 
 #### launch the demo:
 
