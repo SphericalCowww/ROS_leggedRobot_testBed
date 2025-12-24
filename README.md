@@ -254,14 +254,14 @@ Then run the following:
     colcon build
     source install/setup.bash
     sudo chmod a+rw /dev/ttyUSB0
-    ros2 launch my_robot_bringup my_robot.launch.with_commander.py
+    ros2 launch my_robot_bringup my_robot.with_commander.launch.py
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
 #### launch with gazebo, command line enabled
 
     colcon build
     source install/setup.bash
-    ros2 launch my_robot_bringup my_robot.launch.with_commander.py
+    ros2 launch my_robot_bringup my_robot.with_commander.launch.py
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
 ## References:
