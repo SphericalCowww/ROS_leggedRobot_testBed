@@ -6,6 +6,8 @@
     <xacro:property name="servo_z" value="0.034"/>
 
 <!-- ================================================================================================================================== -->
+    <link name="world"/>
+
     <link name="base_link">
         <visual>
             <geometry>
@@ -22,6 +24,10 @@
         </collision>
         <xacro:lazy_inertia m="10.0"/>
     </link>
+    <joint name="world_base_link" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+    </joint>
 
     <link name="main_board">
         <visual>

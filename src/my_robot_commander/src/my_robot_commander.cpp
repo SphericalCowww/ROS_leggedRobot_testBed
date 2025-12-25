@@ -20,17 +20,18 @@ class my_robot_commander_class
         my_robot_commander_class(std::shared_ptr<rclcpp::Node> node) {
             node_ = node;
             RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::constructor()");
+            //waitForJointStates(node_);
 
             leg1_interface_ = std::make_shared<MoveGroupInterface>(node_, "leg1");
             leg1_interface_->setMaxVelocityScalingFactor(1.0);
             leg1_interface_->setMaxAccelerationScalingFactor(1.0);
-            leg1_interface_->setEndEffectorLink("calfSphere");
+            leg1_interface_->setEndEffectorLink(endEffectorLink);
 
-            leg1_named_subscriber_ = node_->create_subscription<ros_string> ("leg1_set_named", 10,
+            leg1_named_subscriber_ = node_->create_subscription<ros_string> ("/leg1_set_named", 10,
                 std::bind(&my_robot_commander_class::leg1NamedCallback, this, _1));            
-            leg1_joint_subscriber_ = node_->create_subscription<ros_array>  ("leg1_set_joint", 10,
+            leg1_joint_subscriber_ = node_->create_subscription<ros_array>  ("/leg1_set_joint", 10,
                 std::bind(&my_robot_commander_class::leg1JointCallback, this, _1));
-            leg1_pose_subscriber_ = node_->create_subscription<custom_array>("leg1_set_pose", 10,
+            leg1_pose_subscriber_ = node_->create_subscription<custom_array>("/leg1_set_pose", 10,
                 std::bind(&my_robot_commander_class::leg1PoseCallback,  this, _1));
         }
         void leg1SetNamedTarget(const std::string &name) {
@@ -44,10 +45,26 @@ class my_robot_commander_class
             planAndExecute(leg1_interface_);
         }
         void leg1SetPoseTarget(double x, double y, double z, bool use_cartesian_path=false) {
+            leg1_interface_->setStartStateToCurrentState();
+
+            endEffector_pose_ = leg1_interface_->getCurrentPose();
+            endEffector_x_ = endEffector_pose_.pose.position.x;
+            endEffector_y_ = endEffector_pose_.pose.position.y;
+            endEffector_z_ = endEffector_pose_.pose.position.z;
+            RCLCPP_INFO(node_->get_logger(), 
+                        "my_robot_commander_class::leg1SetPoseTarget(): cur end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
+            endEffector_pose_ = leg1_interface_->getCurrentPose(endEffectorLink);
+            endEffector_x_ = endEffector_pose_.pose.position.x;
+            endEffector_y_ = endEffector_pose_.pose.position.y;
+            endEffector_z_ = endEffector_pose_.pose.position.z;
+            RCLCPP_INFO(node_->get_logger(), 
+                        "my_robot_commander_class::leg1SetPoseTarget(): cur end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
+
             tf2::Quaternion quaternionObj;
             geometry_msgs::msg::PoseStamped target_pose;
             target_pose.header.frame_id = leg1_interface_->getPlanningFrame(); 
-
             target_pose.pose.position.x = x;
             target_pose.pose.position.y = y;
             target_pose.pose.position.z = z;
@@ -56,13 +73,13 @@ class my_robot_commander_class
             target_pose.pose.orientation.z = 0.0;
             target_pose.pose.orientation.w = 1.0;
 
-            leg1_interface_->setStartStateToCurrentState();
             if (use_cartesian_path == false) {
                 leg1_interface_->setPoseTarget(target_pose);
                 planAndExecute(leg1_interface_);
             } else {
                 moveit_msgs::msg::RobotTrajectory trajectory;
                 std::vector<geometry_msgs::msg::Pose> waypoints;
+                waypoints.push_back(endEffector_pose_.pose);
                 waypoints.push_back(target_pose.pose);
                 double fraction = leg1_interface_->computeCartesianPath(waypoints,
                                                                         cartesianConstraintStepsize_,
@@ -76,6 +93,23 @@ class my_robot_commander_class
             }
         }
     private:
+        void waitForJointStates(std::shared_ptr<rclcpp::Node> node) {
+            bool joint_state_received = false;
+            auto sub = node->create_subscription<sensor_msgs::msg::JointState>(
+                "/joint_states", 10,
+                [&joint_state_received](sensor_msgs::msg::JointState::SharedPtr msg) {
+                    joint_state_received = true;
+                });
+            RCLCPP_INFO(node->get_logger(), "Waiting for first joint states...");
+            while (rclcpp::ok() && !joint_state_received) {
+                rclcpp::spin_some(node);
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+            RCLCPP_INFO(node->get_logger(), "Joint states received.");
+
+            sensor_msgs::msg::JointState js_msg;
+            js_msg.header.stamp = rclcpp::Clock().now();
+        }
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
             //interface->plan(plan);
@@ -86,7 +120,6 @@ class my_robot_commander_class
                 RCLCPP_WARN(node_->get_logger(), "planAndExecute(): planning failed");
             }
         }
-
         void leg1NamedCallback(const ros_string::SharedPtr msg) {
             RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1NamedCallback()");
             leg1SetNamedTarget(msg->data);
@@ -113,10 +146,15 @@ class my_robot_commander_class
             RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1PoseCallback()");
             leg1SetPoseTarget(msg->x, msg->y, msg->z, msg->use_cartesian_path);
         }
-        
         std::shared_ptr<rclcpp::Node> node_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
         double cartesianConstraintStepsize_ = 0.0005;     //meter
+
+        std::string endEffectorLink = "calfSphere";
+        geometry_msgs::msg::PoseStamped endEffector_pose_;
+        double endEffector_x_ = 0;
+        double endEffector_y_ = 0;
+        double endEffector_z_ = 0;
 
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;

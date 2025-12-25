@@ -33,7 +33,6 @@ namespace my_robot_namespace {
         (const rclcpp::Time & time, const rclcpp::Duration & period) 
     {
         //RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::read()");
-        (void) time;
         (void) period;
         if (write_first_call_ == true) {
             start_time_ = time;
@@ -48,8 +47,8 @@ namespace my_robot_namespace {
         set_state("servo1_servo1_padding/position", servo1_position);
         set_state("servo2_servo2_padding/position", servo2_position);
         set_state("servo3_calfFeet/position",       servo3_position);
-        RCLCPP_INFO(node_->get_logger(), "read position (servo1, servo2, servo3): (%f, %f, %f)", 
-                    servo1_position, servo2_position, servo3_position);
+        //RCLCPP_INFO(node_->get_logger(), "read position (servo1, servo2, servo3): (%f, %f, %f)", 
+        //            servo1_position, servo2_position, servo3_position);
         return hardware_interface::return_type::OK;
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::write
@@ -63,7 +62,7 @@ namespace my_robot_namespace {
         double servo1_position = get_command("servo1_servo1_padding/position");
         double servo2_position = get_command("servo2_servo2_padding/position");
         double servo3_position = get_command("servo3_calfFeet/position");
-        if (std::isnan(servo1_position) | std::isnan(servo2_position) | std::isnan(servo3_position)) {
+        if (std::isnan(servo1_position) || std::isnan(servo2_position) || std::isnan(servo3_position)) {
             servo1_position = DXL_PI;
             servo2_position = DXL_PI;
             servo3_position = DXL_PI;
@@ -71,8 +70,8 @@ namespace my_robot_namespace {
         channel_set_position_(servo1_channel_, servo1_position);
         channel_set_position_(servo2_channel_, servo2_position);
         channel_set_position_(servo3_channel_, servo3_position);
-        RCLCPP_INFO(node_->get_logger(), "write position (servo1, servo2, servo3): (%f, %f, %f)",
-                    servo1_position, servo2_position, servo3_position);
+        //RCLCPP_INFO(node_->get_logger(), "write position (servo1, servo2, servo3): (%f, %f, %f)",
+        //            servo1_position, servo2_position, servo3_position);
         return hardware_interface::return_type::OK;
     }   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,9 +142,9 @@ namespace my_robot_namespace {
         dxl_return_ = dxl_wb_.goalPosition(channel, dxl_position_); 
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to set position: %f", position);
-        } else {
+        } /*else {
             RCLCPP_INFO(node_->get_logger(), "Channel %i setting position: %f, %i", channel, position, dxl_position_);
-        }
+        }*/
     }
     double HardwareInterfaceU2D2_my_robot::channel_read_position_(int channel) {
         dxl_return_ = dxl_wb_.itemRead(channel, "Present_Position", &dxl_position_, &log_);
@@ -153,9 +152,9 @@ namespace my_robot_namespace {
         if (dxl_return_ == false) {
             RCLCPP_WARN(node_->get_logger(), "Failed to read position!");
             return -1.0;
-        } else {
+        } /*else {
             RCLCPP_INFO(node_->get_logger(), "Channel %i reading position: %f, %i", channel, position, dxl_position_);
-        }
+        }*/
         return position;
     }
 }
