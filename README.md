@@ -220,7 +220,9 @@ Note that to move the motion wheel in rViz:
 
 #### launch with a proper launch file:
 
-    cp src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
+    mv src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
+    # change the following line if needed in my_robot_controllers.yaml
+    ## update_rate: 100 # Hz
     mv src/my_robot_moveit_config/config/my_robot.ros2_control.xacro src/my_robot_description/urdf/
     rm src/my_robot_moveit_config/config/my_robot.urdf.xacro
     # modify the following line in my_robot.ros2_control.xacro:
