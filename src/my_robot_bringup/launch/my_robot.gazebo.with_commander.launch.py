@@ -1,14 +1,15 @@
-from ament_index_python.packages import get_package_share_path
+from ament_index_python.packages import get_package_share_path, get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node, SetParameter
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 import os
 
 ######################################################################################################################
 def generate_launch_description():
+    pkg_share_path           = get_package_share_directory('my_robot_description')
     robot_description_path   = get_package_share_path('my_robot_description')
     robot_bringup_path       = get_package_share_path('my_robot_bringup')
     robot_moveit_config_path = get_package_share_path('my_robot_moveit_config')   
@@ -19,7 +20,10 @@ def generate_launch_description():
     moveit_config_path = os.path.join(robot_moveit_config_path, 'launch', 'move_group.launch.py')
     rviz_config_path   = os.path.join(robot_description_path,   'rviz',   'my_robot.urdf_config.rviz')
 
-
+    set_gz_resource_path = SetEnvironmentVariable(
+        name='GZ_SIM_RESOURCE_PATH', 
+        value=os.path.join(pkg_share_path, '..'),
+    )
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -85,6 +89,7 @@ def generate_launch_description():
     
     return LaunchDescription([
         SetParameter(name='use_sim_time', value=True),
+        set_gz_resource_path,
         gazebo,
         gz_spawn_entity,
         gz_ros2_bridge,
