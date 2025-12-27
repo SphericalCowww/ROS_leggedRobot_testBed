@@ -7,7 +7,7 @@
 #include "dynamixel_workbench_toolbox/dynamixel_workbench.h"
 
 #define PORT_NAME    "/dev/ttyUSB0"
-#define BAUD_RATE    57600
+#define BAUD_RATE    2000000
 #define MIN_POSITION 0.0
 #define MAX_POSITION 4095.0
 #define DXL_PI       3.1415926
