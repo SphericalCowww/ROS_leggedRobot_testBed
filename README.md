@@ -57,8 +57,10 @@ Use the following App <a href="https://emanual.robotis.com/docs/en/software/dyna
     ## OK
     # Scan
     # Item 
-    ## ID => ID 11 (on the right) => Save (may need to scroll down) 
-    ## Baud Rate (Bus) => 2Mbps (on the right) => Save (may need to scroll down) 
+    ## (Address 7) ID => ID 11 (on the right) => Save (may need to scroll down) 
+    ## (Address 8) Baud Rate (Bus) => 2Mbps (on the right) => Save (may need to scroll down) 
+    ## (Address 9) Return Delay Time => 0 (on the right) => Save (may need to scroll down) 
+    ## (Address 68) Status Return Level => 2 (on the right) => Save (may need to scroll down) 
 
 Can also test out the servo:
 
@@ -112,6 +114,22 @@ Connect U2D2 to Rasp Pi USB port:
     sudo chmod a+rw /dev/ttyUSB0                   # required everytime after reconnection
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
     ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
+
+Connect USB port latency to 1 ms: 
+
+    lsusb
+    # look for: Bus 002 Device 003: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
+    sudo vim /etc/udev/rules.d/99-dynamixel-latency.rules
+    # add: SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", ATTR{device/latency_timer}="1", SYMLINK+="ttyU2D2", MODE="0666", GROUP="dialout"
+    ## ATTR{device/latency_timer}="1": Sets the 1ms latency (The "Sync Read" fix).
+    ## SYMLINK+="ttyU2D2": (Optional but helpful) This creates a static name for your device. You can now use /dev/ttyU2D2 in your code instead of /dev/ttyUSB0, so it won't break if you plug in another USB device.
+    ## MODE="0666": Allows your ROS node to access the port without needing sudo.
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+    ls -l /dev/ttyU2D2
+    # if doesn't exist, do: sudo apt remove brltty
+    cat /sys/class/tty/ttyUSB0/device/latency_timer
+    # which should show 1 for 1 ms
 
 ## Testing ROS2 interface with a simulated robot arm
 
@@ -269,9 +287,13 @@ Then run the following:
     colcon build
     source install/setup.bash
     sudo chmod a+rw /dev/ttyUSB0
-    ros2 launch my_robot_bringup my_robot.with_commander.launch.py
+    sudo bash -c "source /opt/ros/jazzy/setup.bash; source install/setup.bash; ros2 launch my_robot_bringup my_robot.with_commander.launch.py"
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: 0.0, y: 0.0, z: 0.4, use_cartesian_path: false}"
+
+    # for debugging
+    ros2 topic echo /joint_states
+    ros2 param get /move_group use_sim_time
 
 #### launch with gazebo, command line enabled
 
