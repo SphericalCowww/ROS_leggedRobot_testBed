@@ -14,25 +14,36 @@ namespace my_robot_namespace {
             return hardware_interface::CallbackReturn::ERROR;
         }
         node_ = std::make_shared<rclcpp::Node>("HardwareInterfaceU2D2_my_robot_node");
-        RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_init()");
- 
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_init()");
+        } 
+
         dxl_return_ = dxl_wb_.init(PORT_NAME, BAUD_RATE, &log_);
         if (dxl_return_ == false) {
             RCLCPP_ERROR(node_->get_logger(), "Failed to open the port %s!", PORT_NAME);
             return hardware_interface::CallbackReturn::ERROR;
         } else {
-            RCLCPP_INFO(node_->get_logger(), "Initialize with baud rate: %d", BAUD_RATE);
+            if (debug_bool == true) {
+                RCLCPP_DEBUG(node_->get_logger(), "Initialize with baud rate: %d", BAUD_RATE);
+            }
         } 
+        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
+        servo_channels_[0] = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
+        servo_channels_[1] = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
+        servo_channels_[2] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
 
-        servo1_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
-        servo2_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
-        servo3_channel_ = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
+        dxl_wb_.addSyncReadHandler (servo_channels_[0], "Present_Position", &log_);
+        dxl_wb_.addSyncWriteHandler(servo_channels_[0], "Goal_Position",    &log_);
+        handler_index_read_  = dxl_wb_.getTheNumberOfSyncReadHandler()  - 1;
+        handler_index_write_ = dxl_wb_.getTheNumberOfSyncWriteHandler() - 1;
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 
         (const rclcpp::Time & time, const rclcpp::Duration & period) 
     {
-        //RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::read()");
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::read()");
+        }
         (void) period;
         if (write_first_call_ == true) {
             start_time_ = time;
@@ -40,122 +51,127 @@ namespace my_robot_namespace {
         }
         rclcpp::Duration lifetime = time - start_time_;
     
+        dxl_return_ = dxl_wb_.syncRead(handler_index_read_, servo_channels_, servo_N_, &log_);
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            rad_positions_[servo_idx] = (double) dxl_positions_[servo_idx]*(2.0*DXL_PI)/(MAX_POSITION-MIN_POSITION);
+        }
+        dxl_wb_.getSyncReadData(handler_index_read_, servo_channels_, servo_N_, dxl_positions_, &log_);
         // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        double servo1_position = channel_read_position_(servo1_channel_); 
-        double servo2_position = channel_read_position_(servo2_channel_);
-        double servo3_position = channel_read_position_(servo3_channel_);
-        set_state("servo1_servo1_padding/position", servo1_position);
-        set_state("servo2_servo2_padding/position", servo2_position);
-        set_state("servo3_calfFeet/position",       servo3_position);
-        //RCLCPP_INFO(node_->get_logger(), "read position (servo1, servo2, servo3): (%f, %f, %f)", 
-        //            servo1_position, servo2_position, servo3_position);
+        set_state("servo1_servo1_padding/position", rad_positions_[0]);
+        set_state("servo2_servo2_padding/position", rad_positions_[1]);
+        set_state("servo3_calfFeet/position",       rad_positions_[2]);
+        if (dxl_return_ == false) {
+            RCLCPP_ERROR(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::read(): syncRead fails");
+            return hardware_interface::return_type::ERROR;
+        }
+        if (debug_bool == true) {
+            for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+                RCLCPP_DEBUG(node_->get_logger(), "Ch %i position (rad, dxl): (%f, %i)",
+                             servo_channels_[servo_idx],  rad_positions_[servo_idx], dxl_positions_[servo_idx]);
+            }
+        }   
         return hardware_interface::return_type::OK;
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::write
         (const rclcpp::Time & time, const rclcpp::Duration & period) 
     {
-        //RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::write()");
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::write()");
+        }
         (void) time;
         (void) period; 
         
         // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        double servo1_position = get_command("servo1_servo1_padding/position");
-        double servo2_position = get_command("servo2_servo2_padding/position");
-        double servo3_position = get_command("servo3_calfFeet/position");
-        if (std::isnan(servo1_position) || std::isnan(servo2_position) || std::isnan(servo3_position)) {
-            servo1_position = DXL_PI;
-            servo2_position = DXL_PI;
-            servo3_position = DXL_PI;
+        rad_positions_[0] = get_command("servo1_servo1_padding/position");
+        rad_positions_[1] = get_command("servo2_servo2_padding/position");
+        rad_positions_[2] = get_command("servo3_calfFeet/position");
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            if (std::isnan(rad_positions_[servo_idx]) == true){
+                rad_positions_[servo_idx] = DXL_PI;
+            }
+            dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
         }
-        channel_set_position_(servo1_channel_, servo1_position);
-        channel_set_position_(servo2_channel_, servo2_position);
-        channel_set_position_(servo3_channel_, servo3_position);
-        //RCLCPP_INFO(node_->get_logger(), "write position (servo1, servo2, servo3): (%f, %f, %f)",
-        //            servo1_position, servo2_position, servo3_position);
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_);
+        if (dxl_return_ == false) {
+            RCLCPP_ERROR(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::write(): syncWrite fails");
+            return hardware_interface::return_type::ERROR;
+        }
+        if (debug_bool == true) {
+            for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+                RCLCPP_DEBUG(node_->get_logger(), "Ch %i position (rad, dxl): (%f, %i)",
+                             servo_channels_[servo_idx],  rad_positions_[servo_idx], dxl_positions_[servo_idx]);
+            }
+        }
         return hardware_interface::return_type::OK;
     }   
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_configure 
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure()");
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure()");
+        }
         (void) previous_state;
-        channel_init_(servo1_channel_);
-        if (dxl_return_ == false) {
-            return hardware_interface::CallbackReturn::ERROR;
-        }
-        channel_init_(servo2_channel_);
-        if (dxl_return_ == false) {
-            return hardware_interface::CallbackReturn::ERROR;
-        }
-        channel_init_(servo3_channel_);
-        if (dxl_return_ == false) {
-            return hardware_interface::CallbackReturn::ERROR;
+        
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            dxl_return_ = dxl_wb_.ping(servo_channels_[servo_idx], &model_number_, &log_);
+            if (dxl_return_ == false) {
+                RCLCPP_ERROR(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure(): Failed to ping!");
+                return hardware_interface::CallbackReturn::ERROR;
+            } else if (debug_bool == true) {
+                RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure(): "
+                                                  "Pinging id: %d, model_number : %d\n", 
+                                                  servo_channels_[servo_idx], model_number_);
+            }
+            // int32_t velocity = 0, int32_t acceleration = 0 => position mode
+            dxl_return_ = dxl_wb_.jointMode(servo_channels_[servo_idx], 0, 0, &log_);
+            if (dxl_return_ == false) {
+                RCLCPP_ERROR(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure(): "
+                                                  "Failed join position mode!");
+                return hardware_interface::CallbackReturn::ERROR;
+            } else if (debug_bool == true) {
+                RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_configure(): "
+                                                  "Joining position mode for id: %d, model_number : %d\n", 
+                                                  servo_channels_[servo_idx], model_number_);
+            }
         }
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_activate  
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_activate()");
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_activate()");
+        }
         (void) previous_state;
-        set_state("servo1_servo1_padding/position", DXL_PI);
-        set_state("servo2_servo2_padding/position", DXL_PI);
-        set_state("servo3_calfFeet/position",       DXL_PI);
- 
-        channel_set_position_(servo1_channel_, DXL_PI);
-        channel_set_position_(servo2_channel_, DXL_PI);
-        channel_set_position_(servo3_channel_, DXL_PI);
+       
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            rad_positions_[servo_idx] = DXL_PI;
+            dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
+        }
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_); 
+        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
+        set_state("servo1_servo1_padding/position", rad_positions_[0]);
+        set_state("servo2_servo2_padding/position", rad_positions_[1]);
+        set_state("servo3_calfFeet/position",       rad_positions_[2]);
+
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_deactivate
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_deactivate()");
+        if (debug_bool == true) {
+            RCLCPP_DEBUG(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::on_deactivate()");
+        }
         (void) previous_state;
-        channel_set_position_(servo1_channel_, DXL_PI);
-        channel_set_position_(servo2_channel_, DXL_PI);
-        channel_set_position_(servo3_channel_, DXL_PI);
+
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            rad_positions_[servo_idx] = DXL_PI;
+            dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
+        }
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_);
+
         return hardware_interface::CallbackReturn::SUCCESS;
-    }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void HardwareInterfaceU2D2_my_robot::channel_init_(int channel) {
-        dxl_return_ = dxl_wb_.ping(channel, &model_number_, &log_);
-        if (dxl_return_ == false) {
-            RCLCPP_ERROR(node_->get_logger(), "Failed to ping!");
-            return;
-        } else {
-            RCLCPP_INFO(node_->get_logger(), "Pinging id: %d, model_number : %d\n", channel, model_number_);
-        }
-        // int32_t velocity = 0, int32_t acceleration = 0 => position mode
-        dxl_return_ = dxl_wb_.jointMode(channel, 0, 0, &log_);
-        if (dxl_return_ == false) {
-            RCLCPP_ERROR(node_->get_logger(), "Failed join position mode!");
-            return;
-        } else {
-            RCLCPP_INFO(node_->get_logger(), "Joining position mode for id: %d, model_number : %d\n", channel, 
-                        model_number_);
-        }
-    }
-    void HardwareInterfaceU2D2_my_robot::channel_set_position_(int channel, double position) {
-        dxl_position_ = (int32_t) (position*(MAX_POSITION-MIN_POSITION)/(2*DXL_PI)); //int32_t demands full quote
-        dxl_return_ = dxl_wb_.goalPosition(channel, dxl_position_); 
-        if (dxl_return_ == false) {
-            RCLCPP_WARN(node_->get_logger(), "Failed to set position: %f", position);
-        } /*else {
-            RCLCPP_INFO(node_->get_logger(), "Channel %i setting position: %f, %i", channel, position, dxl_position_);
-        }*/
-    }
-    double HardwareInterfaceU2D2_my_robot::channel_read_position_(int channel) {
-        dxl_return_ = dxl_wb_.itemRead(channel, "Present_Position", &dxl_position_, &log_);
-        double position = (double) dxl_position_*2*DXL_PI/(MAX_POSITION-MIN_POSITION);
-        if (dxl_return_ == false) {
-            RCLCPP_WARN(node_->get_logger(), "Failed to read position!");
-            return -1.0;
-        } /*else {
-            RCLCPP_INFO(node_->get_logger(), "Channel %i reading position: %f, %i", channel, position, dxl_position_);
-        }*/
-        return position;
     }
 }
 #include "pluginlib/class_list_macros.hpp"
