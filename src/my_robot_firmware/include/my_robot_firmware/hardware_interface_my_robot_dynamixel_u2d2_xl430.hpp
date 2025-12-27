@@ -6,7 +6,7 @@
 #include "dynamixel_sdk/dynamixel_sdk.h"
 #include "dynamixel_workbench_toolbox/dynamixel_workbench.h"
 
-#define PORT_NAME    "/dev/ttyUSB0"
+#define PORT_NAME    "/dev/ttyU2D2"
 #define BAUD_RATE    2000000
 #define MIN_POSITION 0.0
 #define MAX_POSITION 4095.0

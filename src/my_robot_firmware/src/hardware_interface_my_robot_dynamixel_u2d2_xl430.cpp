@@ -31,11 +31,6 @@ namespace my_robot_namespace {
         servo_channels_[0] = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
         servo_channels_[1] = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
         servo_channels_[2] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
-
-        dxl_wb_.addSyncReadHandler (servo_channels_[0], "Present_Position", &log_);
-        dxl_wb_.addSyncWriteHandler(servo_channels_[0], "Goal_Position",    &log_);
-        handler_index_read_  = dxl_wb_.getTheNumberOfSyncReadHandler()  - 1;
-        handler_index_write_ = dxl_wb_.getTheNumberOfSyncWriteHandler() - 1;
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 
@@ -52,18 +47,18 @@ namespace my_robot_namespace {
         rclcpp::Duration lifetime = time - start_time_;
     
         dxl_return_ = dxl_wb_.syncRead(handler_index_read_, servo_channels_, servo_N_, &log_);
-        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            rad_positions_[servo_idx] = (double) dxl_positions_[servo_idx]*(2.0*DXL_PI)/(MAX_POSITION-MIN_POSITION);
-        }
-        dxl_wb_.getSyncReadData(handler_index_read_, servo_channels_, servo_N_, dxl_positions_, &log_);
-        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        set_state("servo1_servo1_padding/position", rad_positions_[0]);
-        set_state("servo2_servo2_padding/position", rad_positions_[1]);
-        set_state("servo3_calfFeet/position",       rad_positions_[2]);
         if (dxl_return_ == false) {
             RCLCPP_ERROR(node_->get_logger(), "HardwareInterfaceU2D2_my_robot::read(): syncRead fails");
             return hardware_interface::return_type::ERROR;
         }
+        dxl_wb_.getSyncReadData(handler_index_read_, servo_channels_, servo_N_, dxl_positions_, &log_);
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
+            rad_positions_[servo_idx] = (double) dxl_positions_[servo_idx]*(2.0*DXL_PI)/(MAX_POSITION-MIN_POSITION);
+        }
+        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
+        set_state("servo1_servo1_padding/position", rad_positions_[0]);
+        set_state("servo2_servo2_padding/position", rad_positions_[1]);
+        set_state("servo3_calfFeet/position",       rad_positions_[2]);
         if (debug_bool == true) {
             for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
                 RCLCPP_DEBUG(node_->get_logger(), "Ch %i position (rad, dxl): (%f, %i)",
@@ -135,6 +130,11 @@ namespace my_robot_namespace {
                                                   servo_channels_[servo_idx], model_number_);
             }
         }
+
+        dxl_wb_.addSyncReadHandler (servo_channels_[0], "Present_Position", &log_);
+        dxl_wb_.addSyncWriteHandler(servo_channels_[0], "Goal_Position",    &log_);
+        handler_index_read_  = dxl_wb_.getTheNumberOfSyncReadHandler()  - 1;
+        handler_index_write_ = dxl_wb_.getTheNumberOfSyncWriteHandler() - 1;
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_activate  

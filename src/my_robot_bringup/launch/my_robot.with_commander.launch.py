@@ -28,7 +28,9 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_controllers],
+        parameters=[
+            robot_controllers,
+            {'use_steady_clock_for_update': False},],
     )
     # check src/my_robot_bringup/config/my_robot_controllers.yaml 
     joint_state_broadcaster_spawner = Node(
@@ -59,6 +61,7 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
+        SetParameter(name='use_sim_time', value=False),
         robot_state_publisher_node,
         control_node,
         joint_state_broadcaster_spawner,
