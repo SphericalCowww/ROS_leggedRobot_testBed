@@ -287,9 +287,13 @@ Then run the following:
     colcon build
     source install/setup.bash
     sudo chmod a+rw /dev/ttyUSB0
-    ros2 launch my_robot_bringup my_robot.with_commander.launch.py
+    sudo bash -c "source /opt/ros/jazzy/setup.bash; source install/setup.bash; ros2 launch my_robot_bringup my_robot.with_commander.launch.py"
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: 0.0, y: 0.0, z: 0.4, use_cartesian_path: false}"
+
+    # for debugging
+    ros2 topic echo /joint_states
+    ros2 param get /move_group use_sim_time
 
 #### launch with gazebo, command line enabled
 
@@ -299,8 +303,5 @@ Then run the following:
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: 0.0, y: 0.0, z: 0.4, use_cartesian_path: false}"
 
-    # for debugging
-    ros2 topic echo /joint_states
-    ros2 param get /move_group use_sim_time
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
