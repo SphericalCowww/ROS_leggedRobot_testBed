@@ -52,9 +52,13 @@ Use the following App <a href="https://emanual.robotis.com/docs/en/software/dyna
     # Options 
     ## Select protocol to scan => Protocol 2.0 (only)
     ## Select port to scan => which ever port is connected
-    ## Select baudrate to scan => 57600 bps (only) => OK
+    ## Select baudrate to scan => 57600 bps and 2000000bpt => OK
+    ## Select ID range to scan => End => 50
+    ## OK
     # Scan
-    # 7 ID => 11 ID 11 (on the right) => Save (may need to scroll down) 
+    # Item 
+    ## ID => ID 11 (on the right) => Save (may need to scroll down) 
+    ## Baud Rate (Bus) => 2Mbps (on the right) => Save (may need to scroll down) 
 
 Can also test out the servo:
 
