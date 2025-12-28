@@ -79,7 +79,7 @@ The current design has many flaws, but here is the first assembly:
 
 [Video demo1](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg1.mp4), [video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg2.mp4)
 
-Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-down convertor, U2D2, battery pack, and the existing 1 leg.
+Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-down convertor, U2D2, battery pack, and the existing 1 leg. This also shows a bad example, DO NOT wrap the USB signal cable with the power cables; it would create interference.
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly2MainBoard.png" width="300">
 
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
@@ -115,15 +115,23 @@ Connect U2D2 to Rasp Pi USB port:
     ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
     ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
 
-Connect USB port latency to 1 ms: 
+Update USB port latency to 1 ms. Note that this USB signal is delicate, use as short and as high quality of the USB cable as possible.: 
 
     lsusb
     # look for: Bus 002 Device 003: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
     sudo vim /etc/udev/rules.d/99-dynamixel-latency.rules
-    # add: SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", ATTR{device/latency_timer}="1", SYMLINK+="ttyU2D2", MODE="0666", GROUP="dialout"
-    ## ATTR{device/latency_timer}="1": Sets the 1ms latency (The "Sync Read" fix).
-    ## SYMLINK+="ttyU2D2": (Optional but helpful) This creates a static name for your device. You can now use /dev/ttyU2D2 in your code instead of /dev/ttyUSB0, so it won't break if you plug in another USB device.
-    ## MODE="0666": Allows your ROS node to access the port without needing sudo.
+    ---------- add: 
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", ATTR{device/latency_timer}="1", SYMLINK+="ttyU2D2", MODE="0666", GROUP="dialout"
+    # ATTR{device/latency_timer}="1": Sets the 1ms latency (The "Sync Read" fix).
+    # SYMLINK+="ttyU2D2": (Optional but helpful) This creates a static name for your device. You can now use /dev/ttyU2D2 in your code instead of /dev/ttyUSB0, so it won't break if you plug in another USB device.
+    # MODE="0666": Allows your ROS node to access the port without needing sudo.
+    ---------- 
+    sudo vim /etc/udev/rules.d/99-ftdi.rules
+    ---------- add: 
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}==6014, MODE="0666", GROUP="dialout"
+    SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6014", MODE="0666", GROUP="dialout"
+    # This gives the correct permission to the USB port in question, otherwise, whenever reconnected, needs to do: sudo chmod a+rw /dev/ttyUSB0
+    ---------- 
     sudo udevadm control --reload-rules
     sudo udevadm trigger
     ls -l /dev/ttyU2D2
@@ -131,13 +139,34 @@ Connect USB port latency to 1 ms:
     cat /sys/class/tty/ttyUSB0/device/latency_timer
     # which should show 1 for 1 ms
 
+Update to run the firmware with proper permissions to avoid latency:
+
+    # without sudo, we will see the following WARNING in ros2 launch:
+    ## [ros2_control_node-2] [WARN] [1766867979.090889912] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1> (Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+    # with sudo, we can do the following:
+    ## sudo bash -c "source /opt/ros/jazzy/setup.bash; source install/setup.bash; ros2 launch my_robot_bringup my_robot.with_commander.launch.py"
+    # however, eventually we want to run without sudo in case it messes up with other permissions:
+    sudo addgroup realtime
+    sudo usermod -a -G realtime $USER
+    sudo vim /etc/security/limits.d/realtime.conf:
+    ----------  add:
+    @realtime soft rtprio 99
+    @realtime soft priority 99
+    @realtime soft memlock unlimited
+    @realtime hard rtprio 99
+    @realtime hard priority 99
+    @realtime hard memlock unlimited
+    ---------- 
+    sudo reboot
+    # 
+
+
 ## Testing ROS2 interface with a simulated robot arm
 
 ### testing the driver in ROS2
 
     colcon build
     source install/setup.bash
-    sudo chmod a+rw /dev/ttyUSB0          
     ros2 run my_robot_firmware testRaspPi5_dynamixel_u2d2_leg1swing_xl430
     ps -ef | grep testRaspPi5_dynamixel_u2d2_leg1swing_xl430                 # to kill it before it ends
     # only when dynamixels are not connected to into a leg: 
@@ -156,7 +185,6 @@ Under ``ma_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericS
 
     colcon build
     source install/setup.bash
-    sudo chmod a+rw /dev/ttyUSB0
     ros2 launch my_robot_bringup ma_robot.with_commander.launch.py
     ros2 topic info /arm_set_name
     ros2 topic pub -1 /arm_set_named example_interfaces/msg/String "{data: "arm_pose1"}"
@@ -286,11 +314,11 @@ Then run the following:
 
     colcon build
     source install/setup.bash
-    sudo chmod a+rw /dev/ttyUSB0
-    sudo bash -c "source /opt/ros/jazzy/setup.bash; source install/setup.bash; ros2 launch my_robot_bringup my_robot.with_commander.launch.py"
+    ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
+    # on another window
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: 0.0, y: 0.0, z: 0.4, use_cartesian_path: false}"
-
+    
     # for debugging
     ros2 topic echo /joint_states
     ros2 param get /move_group use_sim_time
