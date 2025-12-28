@@ -8,7 +8,6 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-      update_rate: 100  # Hz
 
 leg1_controller:
   ros__parameters:

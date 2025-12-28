@@ -51,6 +51,7 @@ def generate_launch_description():
     commander_node = Node(
         package="my_robot_commander",
         executable="my_robot_commander",
+        parameters=[{'robot_description': robot_description},],
     )
 
     rviz_node = Node(

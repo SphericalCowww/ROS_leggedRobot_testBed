@@ -1,3 +1,4 @@
+#include <thread>
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.hpp>
 //https://github.com/ros2/example_interfaces/tree/rolling/msg
@@ -19,100 +20,75 @@ class my_robot_commander_class
     public:
         my_robot_commander_class(std::shared_ptr<rclcpp::Node> node) {
             node_ = node;
-            RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::constructor()");
-            //waitForJointStates(node_);
+            reentrant_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+            RCLCPP_INFO(node_->get_logger(), "constructor()");
 
             leg1_interface_ = std::make_shared<MoveGroupInterface>(node_, "leg1");
             leg1_interface_->setMaxVelocityScalingFactor(1.0);
             leg1_interface_->setMaxAccelerationScalingFactor(1.0);
-            leg1_interface_->setEndEffectorLink(endEffectorLink);
+            leg1_interface_->setEndEffectorLink(endEffector_link_);
+            while (rclcpp::ok() && !leg1_interface_->startStateMonitor(1.0)) {
+                RCLCPP_INFO(node_->get_logger(), "constructor(): waiting for valid MoveGroupInterface state...");
+            }
+            RCLCPP_INFO(node_->get_logger(), "constructor(): MoveGroupInterface state received and monitor started");
 
+            rclcpp::SubscriptionOptions sub_options;
+            sub_options.callback_group = reentrant_group_;
             leg1_named_subscriber_ = node_->create_subscription<ros_string> ("/leg1_set_named", 10,
-                std::bind(&my_robot_commander_class::leg1NamedCallback, this, _1));            
+                std::bind(&my_robot_commander_class::leg1NamedCallback, this, _1), sub_options);            
             leg1_joint_subscriber_ = node_->create_subscription<ros_array>  ("/leg1_set_joint", 10,
-                std::bind(&my_robot_commander_class::leg1JointCallback, this, _1));
+                std::bind(&my_robot_commander_class::leg1JointCallback, this, _1), sub_options);
             leg1_pose_subscriber_ = node_->create_subscription<custom_array>("/leg1_set_pose", 10,
-                std::bind(&my_robot_commander_class::leg1PoseCallback,  this, _1));
+                std::bind(&my_robot_commander_class::leg1PoseCallback,  this, _1), sub_options);
+
+            leg1_load_current_state_();
+            RCLCPP_INFO(node_->get_logger(), "constructor(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
         }
         void leg1SetNamedTarget(const std::string &name) {
-            leg1_interface_->setStartStateToCurrentState();
+            leg1_load_current_state_();
+            RCLCPP_INFO(node_->get_logger(), "leg1SetNamedTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
             leg1_interface_->setNamedTarget(name);
             planAndExecute(leg1_interface_);
         }
         void leg1SetJointTarget(const std::vector<double> &joints) {
-            leg1_interface_->setStartStateToCurrentState();
+            leg1_load_current_state_();
+            RCLCPP_INFO(node_->get_logger(), "leg1SetJointTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
             leg1_interface_->setJointValueTarget(joints);
             planAndExecute(leg1_interface_);
         }
         void leg1SetPoseTarget(double x, double y, double z, bool use_cartesian_path=false) {
-            leg1_interface_->setStartStateToCurrentState();
-
-            endEffector_pose_ = leg1_interface_->getCurrentPose();
-            endEffector_x_ = endEffector_pose_.pose.position.x;
-            endEffector_y_ = endEffector_pose_.pose.position.y;
-            endEffector_z_ = endEffector_pose_.pose.position.z;
-            RCLCPP_INFO(node_->get_logger(), 
-                        "my_robot_commander_class::leg1SetPoseTarget(): cur end effector (x, y, z) = (%lf, %lf, %lf)",
+            leg1_load_current_state_();
+            RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                         endEffector_x_, endEffector_y_, endEffector_z_);
-            endEffector_pose_ = leg1_interface_->getCurrentPose(endEffectorLink);
-            endEffector_x_ = endEffector_pose_.pose.position.x;
-            endEffector_y_ = endEffector_pose_.pose.position.y;
-            endEffector_z_ = endEffector_pose_.pose.position.z;
-            RCLCPP_INFO(node_->get_logger(), 
-                        "my_robot_commander_class::leg1SetPoseTarget(): cur end effector (x, y, z) = (%lf, %lf, %lf)",
-                        endEffector_x_, endEffector_y_, endEffector_z_);
-
-            tf2::Quaternion quaternionObj;
-            geometry_msgs::msg::PoseStamped target_pose;
-            target_pose.header.frame_id = leg1_interface_->getPlanningFrame(); 
-            target_pose.pose.position.x = x;
-            target_pose.pose.position.y = y;
-            target_pose.pose.position.z = z;
-            target_pose.pose.orientation.x = 0.0;
-            target_pose.pose.orientation.y = 0.0;
-            target_pose.pose.orientation.z = 0.0;
-            target_pose.pose.orientation.w = 1.0;
 
             if (use_cartesian_path == false) {
-                leg1_interface_->setPoseTarget(target_pose);
+                leg1_interface_->setPositionTarget(x, y, z, endEffector_link_);
                 planAndExecute(leg1_interface_);
             } else {
                 moveit_msgs::msg::RobotTrajectory trajectory;
                 std::vector<geometry_msgs::msg::Pose> waypoints;
                 waypoints.push_back(endEffector_pose_.pose);
-                waypoints.push_back(target_pose.pose);
-                double fraction = leg1_interface_->computeCartesianPath(waypoints,
-                                                                        cartesianConstraintStepsize_,
+        
+                geometry_msgs::msg::Pose target;
+                target.position.x = x;
+                target.position.y = y;
+                target.position.z = z;
+                target.orientation = endEffector_pose_.pose.orientation;
+                waypoints.push_back(target);
+
+                double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_, 
                                                                         trajectory);
-                RCLCPP_INFO(node_->get_logger(), 
-                            "leg1SetPoseTarget(): cartesianConstraintFraction = %lf", 
-                            fraction);
-                if (fraction == 1) {
+                if (fraction > 0.9) {
                     leg1_interface_->execute(trajectory);
                 }
             }
         }
     private:
-        void waitForJointStates(std::shared_ptr<rclcpp::Node> node) {
-            bool joint_state_received = false;
-            auto sub = node->create_subscription<sensor_msgs::msg::JointState>(
-                "/joint_states", 10,
-                [&joint_state_received](sensor_msgs::msg::JointState::SharedPtr msg) {
-                    joint_state_received = true;
-                });
-            RCLCPP_INFO(node->get_logger(), "Waiting for first joint states...");
-            while (rclcpp::ok() && !joint_state_received) {
-                rclcpp::spin_some(node);
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            }
-            RCLCPP_INFO(node->get_logger(), "Joint states received.");
-
-            sensor_msgs::msg::JointState js_msg;
-            js_msg.header.stamp = rclcpp::Clock().now();
-        }
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
-            //interface->plan(plan);
             bool success = (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
             if (success == true) {
                 interface->execute(plan);
@@ -121,11 +97,11 @@ class my_robot_commander_class
             }
         }
         void leg1NamedCallback(const ros_string::SharedPtr msg) {
-            RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1NamedCallback()");
+            RCLCPP_INFO(node_->get_logger(), "leg1NamedCallback()");
             leg1SetNamedTarget(msg->data);
         }
         void leg1JointCallback(const ros_array::SharedPtr msg) {
-            RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1JointCallback()");
+            RCLCPP_INFO(node_->get_logger(), "leg1JointCallback()");
             auto numberOfJoints = leg1_interface_->getJointNames().size();
             msg->layout.dim.resize(1);
             msg->layout.dim[0].size   = msg->data.size();
@@ -143,14 +119,26 @@ class my_robot_commander_class
             leg1SetJointTarget(msg->data);
         }
         void leg1PoseCallback(const custom_array::SharedPtr msg) {
-            RCLCPP_INFO(node_->get_logger(), "my_robot_commander_class::leg1PoseCallback()");
+            RCLCPP_INFO(node_->get_logger(), "leg1PoseCallback()");
             leg1SetPoseTarget(msg->x, msg->y, msg->z, msg->use_cartesian_path);
         }
+        void leg1_load_current_state_() {
+            if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
+                RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
+                return;
+            }
+            endEffector_pose_ = leg1_interface_->getCurrentPose(endEffector_link_);
+            endEffector_x_ = endEffector_pose_.pose.position.x;
+            endEffector_y_ = endEffector_pose_.pose.position.y;
+            endEffector_z_ = endEffector_pose_.pose.position.z;
+            leg1_interface_->setStartStateToCurrentState();
+        }
         std::shared_ptr<rclcpp::Node> node_;
+        rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
         double cartesianConstraintStepsize_ = 0.0005;     //meter
 
-        std::string endEffectorLink = "calfSphere";
+        std::string endEffector_link_ = "calfSphere";
         geometry_msgs::msg::PoseStamped endEffector_pose_;
         double endEffector_x_ = 0;
         double endEffector_y_ = 0;
@@ -164,9 +152,14 @@ class my_robot_commander_class
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
+    rclcpp::executors::MultiThreadedExecutor executor;
     auto node = std::make_shared<rclcpp::Node>("my_robot_commander");
-    auto commander = my_robot_commander_class(node);
-    rclcpp::spin(node);
+    executor.add_node(node);
+    std::thread spin_thread([&executor]() {
+        executor.spin();
+    });
+    auto commander = std::make_shared<my_robot_commander_class>(node);
+    spin_thread.join();
     rclcpp::shutdown();
     return 0;
 }
