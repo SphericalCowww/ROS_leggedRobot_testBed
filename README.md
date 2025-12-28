@@ -317,9 +317,11 @@ Then run the following:
     ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
     # on another window
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
-    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: 0.0, y: 0.0, z: 0.4, use_cartesian_path: false}"
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.092514, y: 0.052926, z: 0.134081, use_cartesian_path: false}"
     
     # for debugging
+    ros2 run tf2_tools view_frames
+    ros2 topic hz /joint_states
     ros2 topic echo /joint_states
     ros2 param get /move_group use_sim_time
 
