@@ -319,13 +319,14 @@ Then run the following:
     # on another window
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
     ros2 topic pub -1 /leg1_set_joint example_interfaces/msg/Float64MultiArray "{data: [3.14, 3.14, 3.14]}"
-    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.092514, y: 0.052926, z: 0.134081, use_cartesian_path: false}"
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.092, y: 0.053, z: 0.135, use_cartesian_path: false}" # legs don't need Cartesian paths
     
     # for debugging
-    ros2 run tf2_tools view_frames
+    ros2 topic echo /joint_states # use this to track servo positions instead of printing out in src/my_robot_firmware/hardware_interface_my_robot_dynamixel_u2d2_xl430.xml
     ros2 topic hz /joint_states
-    ros2 topic echo /joint_states
-    ros2 param get /move_group use_sim_time
+    ros2 run tf2_tools view_frames
+    ros2 param list /move_group | grep kinematics
+    ros2 param get /move_group robot_description_kinematics.leg1.kinematics_solver
 
 #### launch with gazebo, command line enabled
 
