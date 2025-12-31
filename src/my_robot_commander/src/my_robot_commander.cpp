@@ -74,6 +74,10 @@ class my_robot_commander_class
             target_pose.position.x = x;
             target_pose.position.y = y;
             target_pose.position.z = z;
+            target_pose.orientation.x = 0.0;
+            target_pose.orientation.y = 0.0;
+            target_pose.orientation.z = 0.0;
+            target_pose.orientation.w = 1.0; 
             if (use_cartesian_path == false) {
                 success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
                 if (success_ == false) {
@@ -97,6 +101,18 @@ class my_robot_commander_class
                                                       fraction, cartesianConstraintFractionThreshold_);
                 }
             }
+            
+            //auto IK_planned_pose = leg1_interface_->getPoseTarget().pose; // removed after execution
+            leg1_load_current_state_();
+            to_target_dist = std::sqrt(std::pow(endEffector_x_ - x, 2) + 
+                                       std::pow(endEffector_y_ - y, 2) +
+                                       std::pow(endEffector_z_ - z, 2));
+            if (to_target_dist > to_target_dist_thres) {
+                RCLCPP_WARN(node_->get_logger(), "leg1SetPoseTarget(): target unreachable (likely hit a joint limit)."
+                                                 "Settled %f meters away.", to_target_dist);
+            }
+            RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
         }
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
@@ -157,8 +173,10 @@ class my_robot_commander_class
         double endEffector_x_ = 0;
         double endEffector_y_ = 0;
         double endEffector_z_ = 0;
-        bool success_ = false;        
-
+        bool   success_             = false;        
+        double to_target_dist       = 0;
+        double to_target_dist_thres = 0.01;
+        
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
         rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
