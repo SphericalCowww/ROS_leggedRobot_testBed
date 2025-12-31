@@ -5,6 +5,7 @@ from launch.substitutions import Command
 from launch_ros.actions import Node, SetParameter
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from moveit_configs_utils import MoveItConfigsBuilder
 import os
 
 ######################################################################################################################
@@ -44,6 +45,11 @@ def generate_launch_description():
         arguments=["leg1_controller"],
     )
     
+    moveit_config = (
+        MoveItConfigsBuilder("my_robot", package_name="my_robot_moveit_config")
+        .robot_description(file_path=urdf_path)
+        .to_moveit_configs()
+    )
     moveit_launcher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(moveit_config_path),
         launch_arguments={}.items(),
@@ -51,7 +57,11 @@ def generate_launch_description():
     commander_node = Node(
         package="my_robot_commander",
         executable="my_robot_commander",
-        parameters=[{'robot_description': robot_description},],
+        parameters=[
+            moveit_config.robot_description,           # The URDF math
+            moveit_config.robot_description_semantic,  # The SRDF (defines 'leg1')
+            moveit_config.robot_description_kinematics,# The kinematics.yaml (THE MISSING PIECE)
+        ],
     )
 
     rviz_node = Node(
@@ -59,6 +69,11 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         arguments=["-d", rviz_config_path],
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+        ],
     )
     
     return LaunchDescription([

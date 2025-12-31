@@ -116,8 +116,8 @@
         <parent link="servo1"/>
         <child  link="servo1_padding"/>
         <origin xyz="0 ${-servo_z/2-0.002} ${0.01+0.0025/2}" rpy="0 0 0"/>
-        <axis xyz="0 1 0"/>
-        <limit effort="1000.0" velocity="1.0" lower="${6*urdf_pi/8}" upper="${10*urdf_pi/8}"/>
+        <axis xyz="0 -1 0"/>
+        <limit effort="1000.0" velocity="1.0" lower="2.5" upper="4.0"/>
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 
@@ -187,7 +187,7 @@
         <child  link="servo2_padding"/>
         <origin xyz="${servo_z/2+0.002} -0.03525 0" rpy="0 0 0"/>
         <axis xyz="1 0 0"/>
-        <limit effort="1000.0" velocity="1.0" lower="${6*urdf_pi/8}" upper="${10*urdf_pi/8}"/>
+        <limit effort="1000.0" velocity="1.0" lower="2.0" upper="4.0"/>
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 
@@ -279,8 +279,8 @@
         <parent link="servo3"/>
         <child  link="calfFeet"/>
         <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.101+0.004} 0" rpy="0 0 0"/>
-        <axis xyz="1 0 0"/>
-        <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
+        <axis xyz="-1 0 0"/>
+        <limit effort="1000.0" velocity="1.0" lower="2.0" upper="4.0"/>
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 

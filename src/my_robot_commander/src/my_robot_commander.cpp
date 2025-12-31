@@ -27,6 +27,12 @@ class my_robot_commander_class
             leg1_interface_->setMaxVelocityScalingFactor(1.0);
             leg1_interface_->setMaxAccelerationScalingFactor(1.0);
             leg1_interface_->setEndEffectorLink(endEffector_link_);
+            leg1_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
+            leg1_interface_->setGoalPositionTolerance(0.01); 
+            leg1_interface_->setGoalOrientationTolerance(0.1);
+            leg1_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0);
+            leg1_interface_->setNumPlanningAttempts(10);
+            leg1_interface_->setPlanningTime(60.0);                         // 5 seconds max per plan
             while (rclcpp::ok() && !leg1_interface_->startStateMonitor(1.0)) {
                 RCLCPP_INFO(node_->get_logger(), "constructor(): waiting for valid MoveGroupInterface state...");
             }
@@ -64,33 +70,39 @@ class my_robot_commander_class
             RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                         endEffector_x_, endEffector_y_, endEffector_z_);
 
+            geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
+            target_pose.position.x = x;
+            target_pose.position.y = y;
+            target_pose.position.z = z;
             if (use_cartesian_path == false) {
-                leg1_interface_->setPositionTarget(x, y, z, endEffector_link_);
+                success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
+                if (success_ == false) {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetPoseTarget(): failed to find IK solution for target!");
+                    return; 
+                }
                 planAndExecute(leg1_interface_);
             } else {
                 moveit_msgs::msg::RobotTrajectory trajectory;
                 std::vector<geometry_msgs::msg::Pose> waypoints;
                 waypoints.push_back(endEffector_pose_.pose);
-        
-                geometry_msgs::msg::Pose target;
-                target.position.x = x;
-                target.position.y = y;
-                target.position.z = z;
-                target.orientation = endEffector_pose_.pose.orientation;
-                waypoints.push_back(target);
+                waypoints.push_back(target_pose);
 
                 double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_, 
                                                                         trajectory);
-                if (fraction > 0.9) {
+                if (fraction > cartesianConstraintFractionThreshold_) {
                     leg1_interface_->execute(trajectory);
+                } else {
+                     RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): Cartesian computation fraction of %lf "
+                                                      "lower than the threshold of %lf", 
+                                                      fraction, cartesianConstraintFractionThreshold_);
                 }
             }
         }
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
-            bool success = (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
-            if (success == true) {
+            success_ = (interface->plan(plan) == moveit::core::MoveItErrorCode::SUCCESS);
+            if (success_ == true) {
                 interface->execute(plan);
             } else {
                 RCLCPP_WARN(node_->get_logger(), "planAndExecute(): planning failed");
@@ -123,26 +135,29 @@ class my_robot_commander_class
             leg1SetPoseTarget(msg->x, msg->y, msg->z, msg->use_cartesian_path);
         }
         void leg1_load_current_state_() {
-            if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
-                RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
-                return;
-            }
+            //if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
+            //    RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
+            //    return;
+            //}
             endEffector_pose_ = leg1_interface_->getCurrentPose(endEffector_link_);
             endEffector_x_ = endEffector_pose_.pose.position.x;
             endEffector_y_ = endEffector_pose_.pose.position.y;
             endEffector_z_ = endEffector_pose_.pose.position.z;
-            leg1_interface_->setStartStateToCurrentState();
+            //leg1_interface_->setStartStateToCurrentState();
+            leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); //faster
         }
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
-        double cartesianConstraintStepsize_ = 0.0005;     //meter
+        double cartesianConstraintStepsize_          = 0.0005;     //meter
+        double cartesianConstraintFractionThreshold_ = 1.0;
 
         std::string endEffector_link_ = "calfSphere";
         geometry_msgs::msg::PoseStamped endEffector_pose_;
         double endEffector_x_ = 0;
         double endEffector_y_ = 0;
         double endEffector_z_ = 0;
+        bool success_ = false;        
 
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
