@@ -79,7 +79,8 @@ The current design has many flaws, but here is the first assembly:
 
 [Video demo1](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg1.mp4), [video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/assembly1Leg2.mp4)
 
-Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-down convertor, U2D2, battery pack, and the existing 1 leg. This also shows a bad example, DO NOT wrap the USB signal cable with the power cables; it would create interference.
+Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-down convertor, U2D2, battery pack, and the existing 1 leg. DO NOT wrap the USB signal cable with the power cables; it would create interference.
+
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly2MainBoard.png" width="300">
 
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
