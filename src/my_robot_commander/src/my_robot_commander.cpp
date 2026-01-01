@@ -40,12 +40,14 @@ class my_robot_commander_class
 
             rclcpp::SubscriptionOptions sub_options;
             sub_options.callback_group = reentrant_group_;
-            leg1_named_subscriber_ = node_->create_subscription<ros_string> ("/leg1_set_named", 10,
+            leg1_named_subscriber_ = node_->create_subscription<ros_string>  ("/leg1_set_named", 10,
                 std::bind(&my_robot_commander_class::leg1NamedCallback, this, _1), sub_options);            
-            leg1_joint_subscriber_ = node_->create_subscription<ros_array>  ("/leg1_set_joint", 10,
+            leg1_joint_subscriber_ = node_->create_subscription<ros_array>   ("/leg1_set_joint", 10,
                 std::bind(&my_robot_commander_class::leg1JointCallback, this, _1), sub_options);
-            leg1_pose_subscriber_ = node_->create_subscription<custom_array>("/leg1_set_pose", 10,
+            leg1_pose_subscriber_  = node_->create_subscription<custom_array>("/leg1_set_pose",  10,
                 std::bind(&my_robot_commander_class::leg1PoseCallback,  this, _1), sub_options);
+            leg1_walk_subscriber_  = node_->create_subscription<ros_string>  ("/leg1_set_walk",  10,
+                std::bind(&my_robot_commander_class::leg1WalkCallback,  this, _1), sub_options);
 
             leg1_load_current_state_();
             RCLCPP_INFO(node_->get_logger(), "constructor(): current end effector (x, y, z) = (%lf, %lf, %lf)",
@@ -113,6 +115,42 @@ class my_robot_commander_class
             RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                         endEffector_x_, endEffector_y_, endEffector_z_);
         }
+        void leg1SetWalkTarget(const std::string &name) {
+            leg1_load_current_state_();
+            RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+                        endEffector_x_, endEffector_y_, endEffector_z_);
+            while (rclcpp::ok() && (is_walking_ == true)) {
+                /*
+                // 1. Define your waypoints for one full step (Swing + Stance)
+                // Assume z_ground = 0.13 and z_lift = 0.16
+                double x_back = -0.05, x_front = 0.05;
+                double z_low = 0.13, z_high = 0.18;
+                // Sequence: Lift -> Move Forward -> Lower -> Push Body (Stance)
+                std::vector<std::vector<double>> step_points = {
+                    {x_back,  0.05, z_high}, // 1. Lift
+                    {x_front, 0.05, z_high}, // 2. Swing Forward
+                    {x_front, 0.05, z_low},  // 3. Touch Down
+                    {x_back,  0.05, z_low}   // 4. Stance (Push body forward)
+                };
+                for (auto& pt : step_points) {
+                    if (is_walking_ == false) {
+                        break;
+                    }
+                    // Call your existing logic
+                    leg1SetPoseTarget(pt[0], pt[1], pt[2], false); 
+                    // Note: You might need a tiny sleep here or use 
+                    // leg1_interface_->waitForExecution() if not already blocking
+                }
+                */
+                if (is_walking_ == false) {
+                    break;    
+                }
+                //leg1SetPoseTarget(-0.092, 0.053, 0.135, false);
+                leg1SetPoseTarget(-0.092, 0.09, 0.135, false);
+                leg1SetPoseTarget(-0.092, 0.05, 0.08,   false);
+                leg1SetPoseTarget(-0.092, 0.01, 0.135, false);
+            }
+        }
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
@@ -149,6 +187,21 @@ class my_robot_commander_class
             RCLCPP_INFO(node_->get_logger(), "leg1PoseCallback()");
             leg1SetPoseTarget(msg->x, msg->y, msg->z, msg->use_cartesian_path);
         }
+        void leg1WalkCallback(const ros_string::SharedPtr msg) {
+            RCLCPP_INFO(node_->get_logger(), "leg1WalkCallback()");
+            if (is_walking_ == false) {
+                RCLCPP_INFO(node_->get_logger(), "leg1WalkCallback(): starting walking gait loop");
+                is_walking_ = true;
+                gait_thread_ = std::thread(&my_robot_commander_class::leg1SetWalkTarget, this, msg->data);
+            } else {
+                RCLCPP_INFO(node_->get_logger(), "leg1WalkCallback(): stopping walking gait loop");
+                is_walking_ = false;
+                if (gait_thread_.joinable() == true) {
+                    gait_thread_.join();
+                }
+            }
+        }
+        ////////////////////////////////////////////////////
         void leg1_load_current_state_() {
             //if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
             //    RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
@@ -175,10 +228,14 @@ class my_robot_commander_class
         bool   success_             = false;        
         double to_target_dist       = 0;
         double to_target_dist_thres = 0.01;
+
+        bool is_walking_ = false;
+        std::thread gait_thread_;
         
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
         rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
+        rclcpp::Subscription<ros_string>  ::SharedPtr leg1_walk_subscriber_;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
