@@ -74,11 +74,10 @@ class my_robot_commander_class
             target_pose.position.x = x;
             target_pose.position.y = y;
             target_pose.position.z = z;
-            target_pose.orientation.x = 0.0;
-            target_pose.orientation.y = 0.0;
-            target_pose.orientation.z = 0.0;
-            target_pose.orientation.w = 1.0; 
+            //leg1_interface_->setGoalOrientationTolerance(std::numbers::pi);
+            //target_pose.orientation.w = 1.0; 
             if (use_cartesian_path == false) {
+                //success_ = leg1_interface_->setPositionTarget(x, y, z, endEffector_link_);
                 success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
                 if (success_ == false) {
                     RCLCPP_ERROR(node_->get_logger(), "leg1SetPoseTarget(): failed to find IK solution for target!");
@@ -159,8 +158,8 @@ class my_robot_commander_class
             endEffector_x_ = endEffector_pose_.pose.position.x;
             endEffector_y_ = endEffector_pose_.pose.position.y;
             endEffector_z_ = endEffector_pose_.pose.position.z;
-            //leg1_interface_->setStartStateToCurrentState();
-            leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); //faster
+            leg1_interface_->setStartStateToCurrentState();
+            //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); //faster, but risk stalling
         }
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
