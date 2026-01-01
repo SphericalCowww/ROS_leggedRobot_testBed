@@ -252,6 +252,7 @@ Fix the following file:
     ##  kinematics_solver_search_resolution: 0.005
     ##  kinematics_solver_timeout: 0.05
     ##  kinematics_solver_attempts: 3
+    ##  position_only_ik: True        # this one is important because the leg does NOT care about the orientation of the end effector
 
 #### launch the demo:
 
@@ -292,6 +293,13 @@ Note that to move the motion wheel in rViz:
     ## Context => Planning Library => ompl
     ## Planning => Goal State: pose1 => Plan => Execute
 
+#### launch with gazebo, command line enabled
+
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
+    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
+
 #### launch with hardware, command line enabled
 Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>my_robot_namespace::HardwareInterfaceU2D2_my_robot</plugin>``. 
 
@@ -327,13 +335,6 @@ Then run the following:
     ros2 run tf2_tools view_frames
     ros2 param list /move_group | grep kinematics
     ros2 param get /move_group robot_description_kinematics.leg1.kinematics_solver
-
-#### launch with gazebo, command line enabled
-
-    colcon build
-    source install/setup.bash
-    ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
-    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
