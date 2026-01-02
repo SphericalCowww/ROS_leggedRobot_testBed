@@ -43,7 +43,7 @@
             </geometry>
             <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
-        <xacro:lazy_inertia m="1.0"/>
+        <xacro:lazy_inertia m="0.0336"/>
     </link>
     <joint name="base_link_main_board" type="fixed">
         <parent link="base_link"/>
@@ -51,7 +51,7 @@
         <origin xyz="0 0.012 -0.004" rpy="0 0 0"/>
     </joint>
 
-    <!-- ============================================================================================================================== --> 
+    <!-- ============================================================================================================================== -->
     <link name="servo1_holder">
         <visual>
             <geometry>
@@ -66,7 +66,7 @@
             </geometry>
             <origin xyz="0 0 0.007" rpy="0 0 ${urdf_pi/2}"/>
         </collision>
-        <xacro:box_inertia m="0.01" x="0.037" y="0.032" z="0.014" o_xyz="0 0 0.007" o_rpy="0 0 ${urdf_pi/2}"/>
+        <xacro:box_inertia m="0.0098" x="0.037" y="0.032" z="0.014" o_xyz="0 0 0.007" o_rpy="0 0 ${urdf_pi/2}"/>
     </link> 
     <joint name="main_board_servo1_holder" type="fixed">
         <parent link="main_board"/>
@@ -110,7 +110,7 @@
             </geometry>
             <origin xyz="0 -0.002 0" rpy="${urdf_pi/2} 0 0"/>
         </collision>
-        <xacro:cylinder_inertia m="0.001" r="0.011" l="0.004" o_xyz="0 -0.002 0" o_rpy="${urdf_pi/2} 0 0"/>
+        <xacro:cylinder_inertia m="0.0013" r="0.011" l="0.004" o_xyz="0 -0.002 0" o_rpy="${urdf_pi/2} 0 0"/>
     </link> 
     <joint name="servo1_servo1_padding" type="revolute">
         <parent link="servo1"/>
@@ -121,7 +121,7 @@
         <dynamics friction="0.05" damping="0.1"/>
     </joint>
 
-    <!-- ============================================================================================================================== --> 
+    <!-- ============================================================================================================================== -->
     <link name="servo2_holder">
         <visual>
             <geometry>
@@ -136,7 +136,7 @@
             </geometry>
             <origin xyz="0 -0.007 0" rpy="${urdf_pi/2} 0 0"/>
         </collision>
-        <xacro:box_inertia m="0.01" x="0.037" y="0.032" z="0.014" o_xyz="0 -0.007 0" o_rpy="${urdf_pi/2} 0 0"/>
+        <xacro:box_inertia m="0.0098" x="0.037" y="0.032" z="0.014" o_xyz="0 -0.007 0" o_rpy="${urdf_pi/2} 0 0"/>
     </link> 
     <joint name="base_link_servo2_holder" type="fixed">
         <parent link="servo1_padding"/>
@@ -180,7 +180,7 @@
             </geometry>
             <origin xyz="0.002 0 0" rpy="0 ${urdf_pi/2} 0"/>
         </collision>
-        <xacro:cylinder_inertia m="0.001" r="0.011" l="0.004" o_xyz="0.002 0 0" o_rpy="0 ${urdf_pi/2} 0"/>
+        <xacro:cylinder_inertia m="0.0013" r="0.011" l="0.004" o_xyz="0.002 0 0" o_rpy="0 ${urdf_pi/2} 0"/>
     </link> 
     <joint name="servo2_servo2_padding" type="revolute">
         <parent link="servo2"/>
@@ -206,7 +206,7 @@
             </geometry>
             <origin xyz="0.003 -0.016 0" rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
         </collision>
-        <xacro:box_inertia m="0.01" x="0.040" y="0.032" z="0.006" o_xyz="0.003 -0.016 0" o_rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
+        <xacro:box_inertia m="0.0085" x="0.040" y="0.032" z="0.006" o_xyz="0.003 -0.016 0" o_rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
     </link>
     <joint name="servo2_padding_inner_thigh" type="fixed">
         <parent link="servo2_padding"/>
@@ -228,7 +228,7 @@
             </geometry>
             <origin xyz="0.003 -0.055 0" rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
         </collision>
-        <xacro:box_inertia m="0.02" x="0.040" y="0.032" z="0.006" o_xyz="0.003 -0.055 0" o_rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
+        <xacro:box_inertia m="0.0113" x="0.040" y="0.032" z="0.006" o_xyz="0.003 -0.055 0" o_rpy="${-urdf_pi/2} 0 ${-urdf_pi/2}"/>
     </link>
     <joint name="inner_thigh_outer_thigh" type="fixed">
         <parent link="inner_thigh"/>
@@ -250,7 +250,8 @@
             </geometry>
             <origin xyz="0 ${-servo_y/2} 0" rpy="0 ${urdf_pi/2} 0"/>
         </collision>
-        <xacro:box_inertia m="0.0572" x="${servo_x}" y="${servo_y}" z="${servo_z}" o_xyz="0 ${-servo_y/2} 0" o_rpy="0 ${urdf_pi/2} 0"/>
+        <xacro:box_inertia m="${0.0572+0.0113+0.0078}" x="${servo_x}" y="${servo_y}" z="${servo_z}" 
+                           o_xyz="0 ${-servo_y/2} 0" o_rpy="0 ${urdf_pi/2} 0"/>
     </link>
     <joint name="outer_thigh_servo3" type="fixed">
         <parent link="outer_thigh"/>
@@ -272,7 +273,7 @@
             </geometry>
             <origin xyz="-0.002 ${-0.008+0.008} ${0.035-0.080}" rpy="0 ${-urdf_pi/2} 0"/>
         </collision>
-        <xacro:box_inertia m="0.02" x="0.150" y="0.016" z="0.004" 
+        <xacro:box_inertia m="${0.0172+3*0.0015+0.0015}" x="0.150" y="0.016" z="0.004" 
                            o_xyz="${-servo_z/2-0.002-0.0025-0.002} ${-0.008+0.008} ${0.035-0.080}" o_rpy="0 ${-urdf_pi/2} 0"/>
     </link>
     <joint name="servo3_calfFeet" type="revolute">
@@ -298,7 +299,8 @@
             </geometry>
             <origin xyz="-0.0005 0 0.0145" rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
         </collision>
-        <xacro:box_inertia m="0.0015" x="0.022" y="0.051" z="0.0065" o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
+        <xacro:box_inertia m="${0.0047+0.0015}" x="0.022" y="0.051" z="0.0065" 
+                           o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
     </link>
     <joint name="servo3_calfJoint" type="revolute">
         <parent link="servo3"/>
