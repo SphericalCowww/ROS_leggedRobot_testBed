@@ -339,7 +339,10 @@ Then run the following:
     ros2 param list /move_group | grep kinematics
     ros2 param get /move_group robot_description_kinematics.leg1.kinematics_solver
 
-Note the Cartesian path currently does work due to <a href="https://github.com/moveit/moveit2/issues/3658">moveit issue</a>.
+Note the Cartesian path currently does work due to <a href="https://github.com/moveit/moveit2/issues/3658">moveit issue</a>. For debugging:
+
+    ros2 param get /move_group jump_threshold
+    ros2 param list /move_group
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
