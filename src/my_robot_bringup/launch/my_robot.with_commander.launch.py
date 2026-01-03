@@ -61,6 +61,7 @@ def generate_launch_description():
             moveit_config.robot_description,           # The URDF math
             moveit_config.robot_description_semantic,  # The SRDF (defines 'leg1')
             moveit_config.robot_description_kinematics,# The kinematics.yaml (THE MISSING PIECE)
+            {"jump_threshold": 0.15},                  # for computeCartesianPath
         ],
     )
 
@@ -77,6 +78,7 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
+        SetParameter(name='jump_threshold', value=0.15),
         SetParameter(name='use_sim_time', value=False),
         robot_state_publisher_node,
         control_node,

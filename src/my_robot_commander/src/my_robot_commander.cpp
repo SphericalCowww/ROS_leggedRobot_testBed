@@ -93,8 +93,8 @@ class my_robot_commander_class
                 waypoints.push_back(target_pose);
 
                 double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_, 
-                                                                        trajectory);
-                if (fraction > cartesianConstraintFractionThreshold_) {
+                                                                        0.15, trajectory);
+                if (cartesianConstraintFractionThreshold_ <= fraction) {
                     leg1_interface_->execute(trajectory);
                 } else {
                      RCLCPP_INFO(node_->get_logger(), "leg1SetPoseTarget(): Cartesian computation fraction of "
@@ -135,7 +135,7 @@ class my_robot_commander_class
             } else if (name == "walk2") {
                 std::vector<geometry_msgs::msg::Pose> waypoints;
                 waypoints.push_back(endEffector_pose_.pose);
-                for (int pt_idx = 0; pt_idx <= step_points.size(); pt_idx++) {
+                for (int pt_idx = 0; pt_idx <= int(step_points.size()); pt_idx++) {
                     geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
                     waypoints.push_back(target_pose);
                     waypoints[pt_idx+1].position.x = step_points[pt_idx][0];
@@ -147,7 +147,7 @@ class my_robot_commander_class
                 while (rclcpp::ok() && (is_walking_ == true)) {
                     double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_,
                                                                             trajectory);
-                    if (fraction > cartesianConstraintFractionThreshold_) {
+                    if (cartesianConstraintFractionThreshold_ <= fraction) {
                         leg1_interface_->execute(trajectory);
                     } else {
                          RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): Cartesian computation fraction of "
@@ -178,7 +178,7 @@ class my_robot_commander_class
            
                     geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
                     target_pose.position.x = x0;
-                    target_pose.position.y = (y_0 - 2*traj_arc_rad) + lin_frac*2*traj_arc_rad;
+                    target_pose.position.y = (y0 - 2*traj_arc_rad) + lin_frac*2*traj_arc_rad;
                     target_pose.position.z = z0;
             
                     waypoints.push_back(target_pose);           
@@ -188,7 +188,7 @@ class my_robot_commander_class
                 while (rclcpp::ok() && (is_walking_ == true)) {
                     double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_,
                                                                             trajectory);
-                    if (fraction > cartesianConstraintFractionThreshold_) {
+                    if (cartesianConstraintFractionThreshold_ <= fraction) {
                         leg1_interface_->execute(trajectory);
                     } else {
                          RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): Cartesian computation fraction of "
@@ -198,10 +198,6 @@ class my_robot_commander_class
                     leg1_load_current_state_();
                 }
             }
-        }
-    }
-
-
         }
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
@@ -269,7 +265,7 @@ class my_robot_commander_class
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
-        double cartesianConstraintStepsize_          = 0.0005;     //meter
+        double cartesianConstraintStepsize_          = 0.001;     //meter
         double cartesianConstraintFractionThreshold_ = 1.0;
 
         std::string endEffector_link_ = "calfSphere";
