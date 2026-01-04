@@ -7,6 +7,9 @@
 #include "my_robot_interface/msg/my_robot_leg1_pose_target.hpp"
 #include <example_interfaces/msg/bool.hpp>
 
+#include <moveit_msgs/msg/motion_sequence_request.hpp>
+#include <moveit_msgs/msg/motion_sequence_response.hpp>
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
 using namespace std::placeholders;                  // for using _1
@@ -194,6 +197,82 @@ class my_robot_commander_class
                          RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): Cartesian computation fraction of "
                                                           "%lf, lower than the threshold of %lf",
                                                           fraction, cartesianConstraintFractionThreshold_);
+                    }
+                    leg1_load_current_state_();
+                }
+            } else if (name == "walk4") {
+                leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
+                double z0 = 0.135; 
+                double y0 = 0.09;
+                double x0 = -0.09;  
+                double traj_arc_rad  = 0.04; 
+
+                geometry_msgs::msg::Pose pose_start = endEffector_pose_.pose;
+                pose_start.position.x = x0; 
+                pose_start.position.y = y0; 
+                pose_start.position.z = z0;
+
+                geometry_msgs::msg::Pose pose_top = pose_start;
+                pose_top.position.y = y0 - traj_arc_rad; 
+                pose_top.position.z = z0 - traj_arc_rad;
+
+                geometry_msgs::msg::Pose pose_land = pose_start;
+                pose_land.position.y = y0 - 2*traj_arc_rad;
+                pose_land.position.z = z0;
+
+                while (rclcpp::ok() && is_walking_) {
+                    moveit_msgs::msg::MotionSequenceRequest sequence;
+
+                    // --- COMMAND 1: CIRCULAR SWING ---
+                    moveit_msgs::msg::MotionSequenceItem traj1;
+                    traj1.req.group_name = "leg1";
+                    traj1.req.planner_id = "CIRC"; 
+        
+                    // --- COMMAND 1: End Point
+                    moveit_msgs::msg::Constraints goal1_0;
+                    moveit_msgs::msg::PoseConstraint constraint1_0;
+                    constraint1_0.link_name = endEffector_link_;
+                    constraint1_0.pose      = pose_land;
+                    goal1_0.pose_constraints.push_back(constraint1_0);
+        
+                    // --- COMMAND 1: Interim Point (the peak of the arc)
+                    moveit_msgs::msg::Constraints goal1_1;
+                    moveit_msgs::msg::PoseConstraint constraint1_1;
+                    constraint1_1.link_name = endEffector_link_;
+                    constraint1_1.pose      = pose_top;
+                    goal1_1.pose_constraints.push_back(constraint1_1);
+        
+                    traj1.req.goal_constraints.push_back(goal1_0);
+                    traj1.req.path_constraints = goal1_1;           // Pilz uses path_constraints for the CIRC traj
+                    traj1.blend_radius = 0.005;                     // 5mm blend between traj1 and traj2
+                    sequence.items.push_back(traj1);
+
+                    // --- COMMAND 2: LINEAR STANCE ---
+                    moveit_msgs::msg::MotionSequenceItem traj2_0;
+                    traj2_0.req.group_name = "leg1";
+                    traj2_0.req.planner_id = "LIN"; 
+        
+                    moveit_msgs::msg::Constraints goal2_0;
+                    moveit_msgs::msg::PoseConstraint constraint2_0;
+                    constraint2_0.link_name = endEffector_link_;
+                    constraint2_0.pose      = pose_start;
+                    goal2_0.pose_constraints.push_back(pc_stance);
+        
+                    traj2.req.goal_constraints.push_back(goal2_0);
+                    traj2.blend_radius = 0.0;                       // 0mm blend for last traj => really?
+                    sequence.items.push_back(traj2);
+
+                    // --- MoveGroup Sequence Service ---
+                    auto sequence_client = node_->create_client<moveit_msgs::srv::GetMotionSequence>
+                        ("/plan_sequence_path");
+                    auto request = std::make_shared<moveit_msgs::srv::GetMotionSequence::Request>();
+                    request->request = sequence;
+                    auto result = sequence_client->async_send_request(request);
+                    if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS) {
+                        auto response = result.get();
+                        if (response->response.error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS) {
+                            leg1_interface_->execute(response->response.planned_trajectories.front());
+                        }
                     }
                     leg1_load_current_state_();
                 }
