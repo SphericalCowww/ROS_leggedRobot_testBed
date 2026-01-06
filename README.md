@@ -83,6 +83,10 @@ Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-dow
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly2MainBoard.png" width="300">
 
+Here is the full assembly. Also, update the unnecessary bearing at the connection of the universal bearings. Moreover, be warned that standing up requires specific sequences to prevent overloading the servos.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs2.png" width="350">
+
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
 Following <a href="https://github.com/SphericalCowww/ROS_init_practice">github</a> to install ROS. To install drivers for Dynamixel, 
