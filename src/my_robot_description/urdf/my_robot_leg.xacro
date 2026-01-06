@@ -273,7 +273,7 @@
             </geometry>
             <origin xyz="-0.002 ${-0.008+0.008} ${0.035-0.080}" rpy="0 ${-urdf_pi/2} 0"/>
         </collision>
-        <xacro:box_inertia m="${0.0172+3*0.0015+0.0015}" x="0.150" y="0.016" z="0.004" 
+        <xacro:box_inertia m="${0.0251-0.0080}" x="0.150" y="0.016" z="0.004" 
                            o_xyz="${-servo_z/2-0.002-0.0025-0.002} ${-0.008+0.008} ${0.035-0.080}" o_rpy="0 ${-urdf_pi/2} 0"/>
     </link>
     <joint name="servo3_calfFeet" type="revolute">
@@ -326,7 +326,7 @@
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
         </collision>
-        <xacro:sphere_inertia m="0.001" r="0.011" o_xyz="0 0 0" o_rpy="0 0 0"/>
+        <xacro:sphere_inertia m="0.0080" r="0.011" o_xyz="0 0 0" o_rpy="0 0 0"/>
     </link>
     <joint name="calfFeet_calfSphere" type="fixed">
         <parent link="calfFeet"/>
