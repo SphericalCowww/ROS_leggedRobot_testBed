@@ -344,5 +344,17 @@ Note the Cartesian path currently does work due to <a href="https://github.com/m
     ros2 param get /move_group jump_threshold
     ros2 param list /move_group
 
+## Training with Isaac Sim
+
+### Hardware
+
+Planned hardware spec (<a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html">requirement reference</a>):
+
+  * Intel Core i9-12900KF/14900KF, but best with AMD Ryzen 9 9950X/9950X3D
+  * GeForce RTX 5080 16GB 
+  * 64GB DDR5 RAM
+  * 850W/1000W power
+  * 3 fan 360mm AIO cooler
+
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)

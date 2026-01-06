@@ -1,4 +1,5 @@
 #include <thread>
+#include <cmath>
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.hpp>
 //https://github.com/ros2/example_interfaces/tree/rolling/msg
@@ -7,8 +8,10 @@
 #include "my_robot_interface/msg/my_robot_leg1_pose_target.hpp"
 #include <example_interfaces/msg/bool.hpp>
 
+#include <moveit_msgs/srv/get_motion_sequence.hpp>
 #include <moveit_msgs/msg/motion_sequence_request.hpp>
 #include <moveit_msgs/msg/motion_sequence_response.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
@@ -52,6 +55,8 @@ class my_robot_commander_class
             leg1_walk_subscriber_  = node_->create_subscription<ros_string>  ("/leg1_set_walk",  10,
                 std::bind(&my_robot_commander_class::leg1WalkCallback,  this, _1), sub_options);
 
+            sequence_client_ = node_->create_client<moveit_msgs::srv::GetMotionSequence>("/plan_sequence_path");
+
             leg1_load_current_state_();
             RCLCPP_INFO(node_->get_logger(), "constructor(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                         endEffector_x_, endEffector_y_, endEffector_z_);
@@ -79,7 +84,7 @@ class my_robot_commander_class
             target_pose.position.x = x;
             target_pose.position.y = y;
             target_pose.position.z = z;
-            //leg1_interface_->setGoalOrientationTolerance(std::numbers::pi);
+            //leg1_interface_->setGoalOrientationTolerance(M_PI);
             //target_pose.orientation.w = 1.0; 
             if (use_cartesian_path == false) {
                 //success_ = leg1_interface_->setPositionTarget(x, y, z, endEffector_link_);
@@ -96,7 +101,7 @@ class my_robot_commander_class
                 waypoints.push_back(target_pose);
 
                 double fraction = leg1_interface_->computeCartesianPath(waypoints, cartesianConstraintStepsize_, 
-                                                                        0.15, trajectory);
+                                                                        trajectory);
                 if (cartesianConstraintFractionThreshold_ <= fraction) {
                     leg1_interface_->execute(trajectory);
                 } else {
@@ -167,7 +172,7 @@ class my_robot_commander_class
                 int traj_lin_N      = 5;   
                 std::vector<geometry_msgs::msg::Pose> waypoints;
                 for (int arc_idx = 0; arc_idx <= traj_arc_N; arc_idx++) {
-                    double arc_angle = M_PI*(arc_idx/traj_arc_N);
+                    double arc_angle = (M_PI*arc_idx)/traj_arc_N;
 
                     geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
                     target_pose.position.x = x0;
@@ -223,55 +228,32 @@ class my_robot_commander_class
                 while (rclcpp::ok() && is_walking_) {
                     moveit_msgs::msg::MotionSequenceRequest sequence;
 
-                    // --- COMMAND 1: CIRCULAR SWING ---
                     moveit_msgs::msg::MotionSequenceItem traj1;
-                    traj1.req.group_name = "leg1";
-                    traj1.req.planner_id = "CIRC"; 
-        
-                    // --- COMMAND 1: End Point
-                    moveit_msgs::msg::Constraints goal1_0;
-                    moveit_msgs::msg::PoseConstraint constraint1_0;
-                    constraint1_0.link_name = endEffector_link_;
-                    constraint1_0.pose      = pose_land;
-                    goal1_0.pose_constraints.push_back(constraint1_0);
-        
-                    // --- COMMAND 1: Interim Point (the peak of the arc)
-                    moveit_msgs::msg::Constraints goal1_1;
-                    moveit_msgs::msg::PoseConstraint constraint1_1;
-                    constraint1_1.link_name = endEffector_link_;
-                    constraint1_1.pose      = pose_top;
-                    goal1_1.pose_constraints.push_back(constraint1_1);
-        
-                    traj1.req.goal_constraints.push_back(goal1_0);
-                    traj1.req.path_constraints = goal1_1;           // Pilz uses path_constraints for the CIRC traj
+                    traj1.req.pipeline_id = "pilz_industrial_motion_planner";
+                    traj1.req.group_name  = "leg1";
+                    traj1.req.planner_id  = "CIRC"; 
+                    traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));       
+                    traj1.req.path_constraints = create_pose_constraints(endEffector_link_, pose_top);
                     traj1.blend_radius = 0.005;                     // 5mm blend between traj1 and traj2
                     sequence.items.push_back(traj1);
 
-                    // --- COMMAND 2: LINEAR STANCE ---
-                    moveit_msgs::msg::MotionSequenceItem traj2_0;
-                    traj2_0.req.group_name = "leg1";
-                    traj2_0.req.planner_id = "LIN"; 
-        
-                    moveit_msgs::msg::Constraints goal2_0;
-                    moveit_msgs::msg::PoseConstraint constraint2_0;
-                    constraint2_0.link_name = endEffector_link_;
-                    constraint2_0.pose      = pose_start;
-                    goal2_0.pose_constraints.push_back(pc_stance);
-        
-                    traj2.req.goal_constraints.push_back(goal2_0);
+                    moveit_msgs::msg::MotionSequenceItem traj2;
+                    traj2.req.pipeline_id = "pilz_industrial_motion_planner";
+                    traj2.req.group_name  = "leg1";
+                    traj2.req.planner_id  = "LIN"; 
+                    traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                     traj2.blend_radius = 0.0;                       // 0mm blend for last traj => really?
                     sequence.items.push_back(traj2);
 
-                    // --- MoveGroup Sequence Service ---
-                    auto sequence_client = node_->create_client<moveit_msgs::srv::GetMotionSequence>
-                        ("/plan_sequence_path");
                     auto request = std::make_shared<moveit_msgs::srv::GetMotionSequence::Request>();
                     request->request = sequence;
-                    auto result = sequence_client->async_send_request(request);
-                    if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS) {
+                    auto result = sequence_client_->async_send_request(request);
+                    if (result.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
                         auto response = result.get();
                         if (response->response.error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS) {
                             leg1_interface_->execute(response->response.planned_trajectories.front());
+                        } else {
+                            RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): walk4 planning failed!");
                         }
                     }
                     leg1_load_current_state_();
@@ -295,11 +277,7 @@ class my_robot_commander_class
         void leg1JointCallback(const ros_array::SharedPtr msg) {
             RCLCPP_INFO(node_->get_logger(), "leg1JointCallback()");
             auto numberOfJoints = leg1_interface_->getJointNames().size();
-            msg->layout.dim.resize(1);
-            msg->layout.dim[0].size   = msg->data.size();
-            msg->layout.dim[0].stride = msg->data.size();
-            msg->layout.data_offset = 0;
-            if (msg->layout.dim.empty()) {
+            if (msg->data.size() != numberOfJoints) {
                 RCLCPP_WARN(node_->get_logger(), "leg1JointCallback(): message empty");
                 return;
             }
@@ -330,16 +308,44 @@ class my_robot_commander_class
         }
         ////////////////////////////////////////////////////
         void leg1_load_current_state_() {
-            //if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
-            //    RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
-            //    return;
-            //}
+            if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
+                RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
+                return;
+            }
             endEffector_pose_ = leg1_interface_->getCurrentPose(endEffector_link_);
             endEffector_x_ = endEffector_pose_.pose.position.x;
             endEffector_y_ = endEffector_pose_.pose.position.y;
             endEffector_z_ = endEffector_pose_.pose.position.z;
             leg1_interface_->setStartStateToCurrentState();
             //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); //faster, but risk stalling
+        }
+        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, const geometry_msgs::msg::Pose& pose,
+                                                              const std::string& name = "") {
+            moveit_msgs::msg::Constraints c;
+            if (!name.empty()) c.name = name;
+
+            moveit_msgs::msg::PositionConstraint p;
+            p.header.frame_id = leg1_interface_->getPlanningFrame();
+            p.link_name = link_name;
+    
+            shape_msgs::msg::SolidPrimitive box;
+            box.type = shape_msgs::msg::SolidPrimitive::BOX;
+            box.dimensions = {0.001, 0.001, 0.001}; 
+            p.constraint_region.primitives.push_back(box);
+            p.constraint_region.primitive_poses.push_back(pose);
+    
+            c.position_constraints.push_back(p);
+
+            moveit_msgs::msg::OrientationConstraint o;
+            o.header.frame_id = leg1_interface_->getPlanningFrame();
+            o.link_name = link_name;
+            o.orientation = pose.orientation;
+            o.absolute_x_axis_tolerance = 2*M_PI; // Large tolerance for position_only_ik
+            o.absolute_y_axis_tolerance = 2*M_PI;
+            o.absolute_z_axis_tolerance = 2*M_PI;
+            c.orientation_constraints.push_back(o);
+
+            return c;
         }
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
@@ -352,17 +358,19 @@ class my_robot_commander_class
         double endEffector_x_ = 0;
         double endEffector_y_ = 0;
         double endEffector_z_ = 0;
-        bool   success_             = false;        
+        std::atomic<bool> success_{   false};
         double to_target_dist       = 0;
         double to_target_dist_thres = 0.01;
 
-        bool is_walking_ = false;
+        std::atomic<bool> is_walking_{false};
         std::thread gait_thread_;
         
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;      
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
         rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_walk_subscriber_;
+
+        rclcpp::Client<moveit_msgs::srv::GetMotionSequence>::SharedPtr sequence_client_;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
