@@ -44,11 +44,21 @@ namespace my_robot_namespace {
             rclcpp::Time start_time_;
 
             uint8_t servo_N_ = 3;
+            std::vector<std::string> joint_names;
             uint8_t servo_channels_[3];
-            double  rad_positions_[3];
-            int32_t dxl_positions_[3];
-            uint8_t handler_index_write_;
-            uint8_t handler_index_read_;
+            double  rad_positions_init_[3];
+            double  rad_positions_ [3];
+            double  rad_velocities_[3];
+            double  rad_efforts_   [3];
+            int32_t dxl_positions_ [3];
+            int32_t dxl_velocities_[3];
+            int32_t dxl_efforts_   [3];
+            uint8_t handler_index_write_pos_;
+            uint8_t handler_index_read_pos_;
+            uint8_t handler_index_read_vel_;
+            uint8_t handler_index_read_eff_;
+
+            void initialize_servo_(uint8_t servo_id);
     };    
 }
 

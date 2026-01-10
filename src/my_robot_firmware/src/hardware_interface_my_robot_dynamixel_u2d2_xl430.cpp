@@ -27,6 +27,12 @@ namespace my_robot_namespace {
         servo_channels_[0] = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
         servo_channels_[1] = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
         servo_channels_[2] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
+        joint_names = {"servo1_servo1_padding", 
+                       "servo2_servo2_padding", 
+                       "servo3_calfFeet"};
+        rad_positions_init_[0] = DXL_PI;
+        rad_positions_init_[1] = DXL_PI;
+        rad_positions_init_[2] = DXL_PI;
         return hardware_interface::CallbackReturn::SUCCESS;     
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 
@@ -40,23 +46,25 @@ namespace my_robot_namespace {
         }
         rclcpp::Duration lifetime = time - start_time_;
     
-        dxl_return_ = dxl_wb_.syncRead(handler_index_read_, servo_channels_, servo_N_, &log_);
+        dxl_return_ = dxl_wb_.syncRead(handler_index_read_pos_, servo_channels_, servo_N_, &log_);
         if (dxl_return_ == false) {
             RCLCPP_ERROR(node_->get_logger(), "read(): syncRead fails");
             return hardware_interface::return_type::ERROR;
         }
-        dxl_wb_.getSyncReadData(handler_index_read_, servo_channels_, servo_N_, dxl_positions_, &log_);
+        dxl_wb_.getSyncReadData(handler_index_read_pos_, servo_channels_, servo_N_, dxl_positions_,  &log_);
+        dxl_wb_.syncRead(handler_index_read_vel_, servo_channels_, servo_N_, &log_);
+        dxl_wb_.getSyncReadData(handler_index_read_vel_, servo_channels_, servo_N_, dxl_velocities_, &log_);
+        dxl_wb_.syncRead(handler_index_read_eff_, servo_channels_, servo_N_, &log_);
+        dxl_wb_.getSyncReadData(handler_index_read_eff_, servo_channels_, servo_N_, dxl_efforts_,    &log_);
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            rad_positions_[servo_idx] = (double) dxl_positions_[servo_idx]*(2.0*DXL_PI)/(MAX_POSITION-MIN_POSITION);
+            rad_positions_ [servo_idx] = (double) dxl_positions_ [servo_idx]*(2.0*DXL_PI)/(MAX_POSITION-MIN_POSITION);
+            rad_velocities_[servo_idx] = (double) dxl_velocities_[servo_idx]*0.229*(2.0*DXL_PI/60.0);
+            rad_efforts_   [servo_idx] = (double) dxl_efforts_   [servo_idx]; 
+            // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
+            set_state(joint_names[servo_idx]+"/position", rad_positions_ [servo_idx]);
+            set_state(joint_names[servo_idx]+"/velocity", rad_velocities_[servo_idx]);
+            set_state(joint_names[servo_idx]+"/effort",   rad_efforts_   [servo_idx]);
         }
-        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        set_state("servo1_servo1_padding/position", rad_positions_[0]);
-        set_state("servo2_servo2_padding/position", rad_positions_[1]);
-        set_state("servo3_calfFeet/position",       rad_positions_[2]);
-        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            RCLCPP_DEBUG(node_->get_logger(), "read(): ch %i position (rad, dxl): (%f, %i)",
-                         servo_channels_[servo_idx],  rad_positions_[servo_idx], dxl_positions_[servo_idx]);
-        }   
         return hardware_interface::return_type::OK;
     }
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::write
@@ -67,23 +75,15 @@ namespace my_robot_namespace {
         (void) period; 
         
         // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        rad_positions_[0] = get_command("servo1_servo1_padding/position");
-        rad_positions_[1] = get_command("servo2_servo2_padding/position");
-        rad_positions_[2] = get_command("servo3_calfFeet/position");
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            if (std::isnan(rad_positions_[servo_idx]) == true){
-                rad_positions_[servo_idx] = DXL_PI;
-            }
+            rad_positions_[servo_idx] = get_command(joint_names[servo_idx]+"/position");
+            if (std::isnan(rad_positions_[servo_idx]) == true) initialize_servo_(servo_idx); 
             dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
         }
-        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_);
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_pos_, servo_channels_, servo_N_, dxl_positions_, 1,&log_);
         if (dxl_return_ == false) {
             RCLCPP_ERROR(node_->get_logger(), "write(): syncWrite fails");
             return hardware_interface::return_type::ERROR;
-        }
-        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            RCLCPP_DEBUG(node_->get_logger(), "write(): ch %i position (rad, dxl): (%f, %i)",
-                         servo_channels_[servo_idx],  rad_positions_[servo_idx], dxl_positions_[servo_idx]);
         }
         return hardware_interface::return_type::OK;
     }   
@@ -113,11 +113,14 @@ namespace my_robot_namespace {
                                                  servo_channels_[servo_idx], model_number_);
             }
         }
-
-        dxl_wb_.addSyncReadHandler (servo_channels_[0], "Present_Position", &log_);
-        dxl_wb_.addSyncWriteHandler(servo_channels_[0], "Goal_Position",    &log_);
-        handler_index_read_  = dxl_wb_.getTheNumberOfSyncReadHandler()  - 1;
-        handler_index_write_ = dxl_wb_.getTheNumberOfSyncWriteHandler() - 1;
+        dxl_wb_.addSyncReadHandler(servo_channels_[0], "Present_Position", &log_);
+        handler_index_read_pos_ = dxl_wb_.getTheNumberOfSyncReadHandler() - 1;
+        dxl_wb_.addSyncReadHandler(servo_channels_[0], "Present_Velocity", &log_);
+        handler_index_read_vel_ = dxl_wb_.getTheNumberOfSyncReadHandler() - 1;
+        dxl_wb_.addSyncReadHandler(servo_channels_[0], "Present_Current", &log_);
+        handler_index_read_eff_ = dxl_wb_.getTheNumberOfSyncReadHandler() - 1;
+        dxl_wb_.addSyncWriteHandler(servo_channels_[0], "Goal_Position", &log_);
+        handler_index_write_pos_ = dxl_wb_.getTheNumberOfSyncWriteHandler() - 1;
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_activate  
@@ -126,16 +129,11 @@ namespace my_robot_namespace {
         RCLCPP_INFO(node_->get_logger(), "on_activate()");
         (void) previous_state;
        
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) initialize_servo_(servo_idx);
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_pos_, servo_channels_, servo_N_, dxl_positions_, 1,&log_);
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            rad_positions_[servo_idx] = DXL_PI;
-            dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
+            set_state(joint_names[servo_idx]+"/position", rad_positions_[servo_idx]);
         }
-        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_); 
-        // see: src/my_robot_description/urdf/my_robot.ros2_control.xacro
-        set_state("servo1_servo1_padding/position", rad_positions_[0]);
-        set_state("servo2_servo2_padding/position", rad_positions_[1]);
-        set_state("servo3_calfFeet/position",       rad_positions_[2]);
-
         return hardware_interface::CallbackReturn::SUCCESS;
     }
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_deactivate
@@ -143,14 +141,19 @@ namespace my_robot_namespace {
     {
         RCLCPP_INFO(node_->get_logger(), "on_deactivate()");
         (void) previous_state;
-
-        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
-            rad_positions_[servo_idx] = DXL_PI;
-            dxl_positions_[servo_idx] = (int32_t)(rad_positions_[servo_idx]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
-        }
-        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_, servo_channels_, servo_N_, dxl_positions_, 1, &log_);
+        for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) initialize_servo_(servo_idx);
+        dxl_return_ = dxl_wb_.syncWrite(handler_index_write_pos_, servo_channels_, servo_N_, dxl_positions_, 1,&log_);
 
         return hardware_interface::CallbackReturn::SUCCESS;
+    }
+
+    void HardwareInterfaceU2D2_my_robot::initialize_servo_(uint8_t servo_id) {
+        rad_positions_[servo_id] = rad_positions_init_[servo_id];
+        dxl_positions_[servo_id] = (int32_t)(rad_positions_[servo_id]*(MAX_POSITION-MIN_POSITION)/(2.0*DXL_PI));
+        rad_velocities_[servo_id] = 0.0;
+        dxl_velocities_[servo_id] = 0;
+        rad_efforts_[servo_id] = 0.0;
+        dxl_efforts_[servo_id] = 0;
     }
 }
 #include "pluginlib/class_list_macros.hpp"

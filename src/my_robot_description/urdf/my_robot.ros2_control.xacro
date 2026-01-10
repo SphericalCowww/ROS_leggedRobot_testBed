@@ -13,17 +13,35 @@
             <state_interface name="position">
               <param name="initial_value">3.14</param>
             </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
         </joint>
         <joint name="servo2_servo2_padding">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
             </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
         </joint>
         <joint name="servo3_calfFeet">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
+            </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
             </state_interface>
         </joint>
     </ros2_control>

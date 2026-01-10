@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- ================================================================================================================================== -->
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot_leg">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
     <xacro:property name="servo_x" value="0.0285"/>
     <xacro:property name="servo_y" value="0.0465"/>
     <xacro:property name="servo_z" value="0.034"/>
@@ -302,7 +302,7 @@
         <xacro:box_inertia m="${0.0047+0.0015}" x="0.022" y="0.051" z="0.0065" 
                            o_xyz="-0.0005 0 0.0145" o_rpy="${urdf_pi/2} 0 ${-urdf_pi/2}"/>
     </link>
-    <joint name="servo3_calfJoint" type="revolute">
+    <!--joint name="servo3_calfJoint" type="revolute">
         <parent link="servo3"/>
         <child  link="calfJoint"/>
         <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.01-0.0025/2} 0" rpy="0 0 0"/>
@@ -310,6 +310,11 @@
         <mimic joint="servo3_calfFeet" multiplier="1.0" offset="0.0"/>
         <limit effort="1000.0" velocity="1.0" lower="${5*urdf_pi/8}" upper="${11*urdf_pi/8}"/>
         <dynamics friction="0.05" damping="0.1"/>
+    </joint-->
+    <joint name="servo3_calfJoint" type="fixed">
+        <parent link="servo3"/>
+        <child  link="calfJoint"/>
+        <origin xyz="${-servo_z/2-0.002-0.0025} ${-0.01-0.0025/2} 0" rpy="0 0 0"/>
     </joint>
 
     <link name="calfSphere">
