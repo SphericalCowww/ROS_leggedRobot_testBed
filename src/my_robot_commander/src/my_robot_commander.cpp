@@ -91,7 +91,7 @@ class my_robot_commander_class
                 success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
                 if (success_ == false) {
                     RCLCPP_ERROR(node_->get_logger(), "leg1SetPoseTarget(): failed to find IK solution for target!");
-                    return; 
+                    return -1; 
                 }
                 planAndExecute(leg1_interface_);
             } else {
@@ -225,38 +225,56 @@ class my_robot_commander_class
                 pose_land.position.y = y0 - 2*traj_arc_rad;
                 pose_land.position.z = z0;
 
-                while (rclcpp::ok() && is_walking_) {
-                    moveit_msgs::msg::MotionSequenceRequest sequence;
 
+                using MoveGroupSequence = moveit_msgs::action::MoveGroupSequence;
+                auto action_client = rclcpp_action::create_client<MoveGroupSequence>(node_, "/sequence_move_group");
+                if (!action_client->wait_for_action_server(std::chrono::seconds(10))) {
+                   RCLCPP_ERROR(node_->get_logger(), 
+                                "leg1SetWalkTarget(): error waiting for action server /sequence_move_group");
+                   return -1;
+                }
+                moveit_msgs::msg::MotionSequenceRequest sequence_request;
+                while (rclcpp::ok() && is_walking_) {
                     moveit_msgs::msg::MotionSequenceItem traj1;
-                    traj1.req.pipeline_id = "pilz_industrial_motion_planner";
-                    traj1.req.group_name  = "leg1";
-                    traj1.req.planner_id  = "CIRC"; 
-                    traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));       
+                    traj1.req.group_name = planning_group_;
+                    traj1.req.planner_id = "CIRC"; 
+                    traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
                     traj1.req.path_constraints = create_pose_constraints(endEffector_link_, pose_top);
                     traj1.blend_radius = 0.005;                     // 5mm blend between traj1 and traj2
                     sequence.items.push_back(traj1);
 
                     moveit_msgs::msg::MotionSequenceItem traj2;
-                    traj2.req.pipeline_id = "pilz_industrial_motion_planner";
-                    traj2.req.group_name  = "leg1";
-                    traj2.req.planner_id  = "LIN"; 
+                    traj2.req.group_name = planning_group_;
+                    traj2.req.planner_id = "LIN"; 
                     traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                     traj2.blend_radius = 0.0;                       // 0mm blend for last traj => really?
                     sequence.items.push_back(traj2);
 
-                    auto request = std::make_shared<moveit_msgs::srv::GetMotionSequence::Request>();
-                    request->request = sequence;
-                    auto result = sequence_client_->async_send_request(request);
-                    if (result.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
-                        auto response = result.get();
-                        if (response->response.error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS) {
-                            leg1_interface_->execute(response->response.planned_trajectories.front());
-                        } else {
-                            RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): walk4 planning failed!");
+                    auto goal_handle_future   = action_client->async_send_goal(goal_msg, send_goal_options);
+                    auto action_result_future = action_client->async_get_result(goal_handle_future.get());
+
+                    std::future_status action_status;
+                    do {
+                        switch (action_status = action_result_future.wait_for(std::chrono::seconds(1)); action_status)
+                        {
+                            case std::future_status::deferred:
+                                RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): deferred");
+                                break;
+                            case std::future_status::timeout:
+                                RCLCPP_INFO(node_->get_logger(),  "leg1SetWalkTarget(): timeout");
+                                break;
+                            case std::future_status::ready:
+                                RCLCPP_INFO(node_->get_logger(),  "leg1SetWalkTarget(): action ready!");
+                                break;
                         }
+                    } while (action_status != std::future_status::ready);
+                    if (action_result_future.valid()) {
+                        auto result = action_result_future.get();
+                        RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): action completed.\n  "
+                                                         "Result: %d", static_cast<int>(result.code));
+                    } else {
+                        RCLCPP_ERROR(node_->get_logger(),  "leg1SetWalkTarget(): action failed");
                     }
-                    leg1_load_current_state_();
                 }
             }
         }
@@ -308,51 +326,51 @@ class my_robot_commander_class
         }
         ////////////////////////////////////////////////////
         void leg1_load_current_state_() {
-            if (!leg1_interface_->getCurrentState(0.5)) {           //wait up to 0.5 seconds 
-                RCLCPP_ERROR(node_->get_logger(), "Failed to fetch current robot state (timeout)");
-                return;
+            if (!leg1_interface_->getCurrentState(0.5)) {           // wait up to 0.5 seconds 
+                RCLCPP_ERROR(node_->get_logger(), "leg1_load_current_state_(): timeout to fetch current robot state");
+                return -1;
             }
             endEffector_pose_ = leg1_interface_->getCurrentPose(endEffector_link_);
             endEffector_x_ = endEffector_pose_.pose.position.x;
             endEffector_y_ = endEffector_pose_.pose.position.y;
             endEffector_z_ = endEffector_pose_.pose.position.z;
             leg1_interface_->setStartStateToCurrentState();
-            //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); //faster, but risk stalling
+            //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); // faster, but risk stalling
         }
-        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, const geometry_msgs::msg::Pose& pose,
+        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
+                                                              const geometry_msgs::msg::Pose& pose,
                                                               const std::string& name = "") {
-            moveit_msgs::msg::Constraints c;
-            if (!name.empty()) c.name = name;
+            moveit_msgs::msg::Constraints constraints;
+            if (!name.empty()) constraints.name = name;
 
-            moveit_msgs::msg::PositionConstraint p;
-            p.header.frame_id = leg1_interface_->getPlanningFrame();
-            p.link_name = link_name;
-    
-            shape_msgs::msg::SolidPrimitive box;
-            box.type = shape_msgs::msg::SolidPrimitive::BOX;
-            box.dimensions = {0.001, 0.001, 0.001}; 
-            p.constraint_region.primitives.push_back(box);
-            p.constraint_region.primitive_poses.push_back(pose);
-    
-            c.position_constraints.push_back(p);
+            moveit_msgs::msg::PositionConstraint pos_constraint;
+            pos_constraint.header.frame_id = leg1_interface_->getPlanningFrame();
+            pos_constraint.link_name       = link_name;
+            //shape_msgs::msg::SolidPrimitive box;
+            //box.type = shape_msgs::msg::SolidPrimitive::BOX;
+            //box.dimensions = {0.001, 0.001, 0.001}; 
+            //pos_constraint.constraint_region.primitives.push_back(box);
+            //pos_constraint.constraint_region.primitive_poses.push_back(pose);
+            constraints.position_constraints.push_back(pos_constraint);
 
-            moveit_msgs::msg::OrientationConstraint o;
-            o.header.frame_id = leg1_interface_->getPlanningFrame();
-            o.link_name = link_name;
-            o.orientation = pose.orientation;
-            o.absolute_x_axis_tolerance = 2*M_PI; // Large tolerance for position_only_ik
-            o.absolute_y_axis_tolerance = 2*M_PI;
-            o.absolute_z_axis_tolerance = 2*M_PI;
-            c.orientation_constraints.push_back(o);
+            moveit_msgs::msg::OrientationConstraint ori_constraint;
+            ori_constraint.header.frame_id = leg1_interface_->getPlanningFrame();
+            ori_constraint.link_name       = link_name;
+            ori_constraint.orientation = pose.orientation;
+            ori_constraint.absolute_x_axis_tolerance = 2*M_PI;   // large tolerance for position_only_ik
+            ori_constraint.absolute_y_axis_tolerance = 2*M_PI;
+            ori_constraint.absolute_z_axis_tolerance = 2*M_PI;
+            constraints.orientation_constraints.push_back(ori_constraint);
 
-            return c;
+            return constraints;
         }
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
-        double cartesianConstraintStepsize_          = 0.001;     //meter
+        double cartesianConstraintStepsize_          = 0.001;     // meter
         double cartesianConstraintFractionThreshold_ = 1.0;
 
+        std::string planning_group_   = "leg1";
         std::string endEffector_link_ = "calfSphere";
         geometry_msgs::msg::PoseStamped endEffector_pose_;
         double endEffector_x_ = 0;
