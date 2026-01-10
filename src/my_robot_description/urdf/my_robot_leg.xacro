@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- ================================================================================================================================== -->
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot_leg">
     <xacro:property name="servo_x" value="0.0285"/>
     <xacro:property name="servo_y" value="0.0465"/>
     <xacro:property name="servo_z" value="0.034"/>

@@ -12,6 +12,7 @@
 #include <moveit_msgs/srv/get_motion_sequence.hpp>
 #include <moveit_msgs/msg/motion_sequence_request.hpp>
 #include <moveit_msgs/msg/motion_sequence_response.hpp>
+#include <moveit/kinematic_constraints/utils.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,18 +235,24 @@ class my_robot_commander_class
                 moveit_msgs::msg::MotionSequenceRequest sequence_request;
                 while (rclcpp::ok() && is_walking_) {
                     moveit_msgs::msg::MotionSequenceItem traj1;
-                    traj1.req.group_name = planning_group_;
-                    traj1.req.planner_id = "CIRC"; 
-                    traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
-                    traj1.req.path_constraints = create_pose_constraints(endEffector_link_, pose_top);
                     traj1.blend_radius = 0.005;                     // 5mm blend between traj1 and traj2
+                    traj1.req.group_name = planning_group_;
+                    traj1.req.planner_id = "LIN"; 
+                    traj1.req.allowed_planning_time           = 5.0;
+                    traj1.req.max_velocity_scaling_factor     = 0.1;
+                    traj1.req.max_acceleration_scaling_factor = 0.1;
+                    traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
+                    //traj1.req.path_constraints = create_pose_constraints(endEffector_link_, pose_top);
                     sequence_request.items.push_back(traj1);
 
                     moveit_msgs::msg::MotionSequenceItem traj2;
-                    traj2.req.group_name = planning_group_;
-                    traj2.req.planner_id = "LIN"; 
-                    traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                     traj2.blend_radius = 0.0;                       // 0mm blend for last traj => really?
+                    traj2.req.group_name = planning_group_;
+                    traj2.req.planner_id = "LIN";
+                    traj2.req.allowed_planning_time           = 5.0;
+                    traj2.req.max_velocity_scaling_factor     = 0.1;
+                    traj2.req.max_acceleration_scaling_factor = 0.1;
+                    traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                     sequence_request.items.push_back(traj2);
 
                     auto goal_msg = MoveGroupSequence::Goal();
@@ -338,6 +345,18 @@ class my_robot_commander_class
             //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); // faster, but risk stalling
         }
         moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
+                                                              const geometry_msgs::msg::Pose& pose) {
+            geometry_msgs::msg::PoseStamped stamped_pose;
+            stamped_pose.header.frame_id = leg1_interface_->getPlanningFrame();
+            stamped_pose.pose = pose;
+
+            double tolerance_pos = 0.001;
+            double tolerance_ang = 0.01;
+
+            return kinematic_constraints::constructGoalConstraints(link_name, stamped_pose, tolerance_pos, tolerance_ang);
+        }
+        /*
+        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
                                                               const geometry_msgs::msg::Pose& pose,
                                                               const std::string& name = "") {
             moveit_msgs::msg::Constraints constraints;
@@ -364,6 +383,7 @@ class my_robot_commander_class
 
             return constraints;
         }
+        */
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
