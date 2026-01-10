@@ -354,10 +354,10 @@ Note the Cartesian path currently does work due to <a href="https://github.com/m
 
 Planned hardware spec (<a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html">requirement reference</a>):
 
-  * Intel Core i9-12900KF/14900KF, but best with AMD Ryzen 9 9950X/9950X3D
+  * AMD Ryzen 7 7800X3D (8 core)
   * GeForce RTX 5080 16GB 
   * 64GB DDR5 RAM
-  * 850W/1000W power
+  * 850W power
   * 3 fan 360mm AIO cooler
 
 ## References:
