@@ -354,11 +354,16 @@ Note the Cartesian path currently does work due to <a href="https://github.com/m
 
 Planned hardware spec (<a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html">requirement reference</a>):
 
-  * AMD Ryzen 7 7800X3D (8 core)
-  * GeForce RTX 5080 16GB 
-  * 64GB DDR5 RAM
-  * 850W power
-  * 3 fan 360mm AIO cooler
+  * AMD Ryzen 7 7800X3D - 8 x 4.2 GHz (TurboBoost bis 5.00 GHz, 8 Kerne / 16 Threads, 96MB Cache)
+  * NVIDIA GeForce RTX 5080 (16GB GDDR7)
+  * 64 GB DDR5 RAM
+  * 2000 GB M.2 SSD
+  * Gigabit Ethernet LAN, Wi-Fi 6
+  * 6x USB 3.2, 4x USB 2.0, 2x HDMI 2.1a, 3x DisplayPort 1.4a, 1x RJ-45, 1x Mikrophon, 1x Kopfhörer, Line-In/ Line-Out/ Mikrofon
+  * Xilence Performance A+ M705D => updated to: be quiet! Pure Loop 2 FX 240mm
+  * 850 Watt
+  * 210 x 430 x 444 mm
+
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
