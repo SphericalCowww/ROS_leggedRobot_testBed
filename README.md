@@ -349,6 +349,25 @@ Note the Cartesian path currently does work due to <a href="https://github.com/m
     ros2 param get /move_group jump_threshold
     ros2 param list /move_group
 
+#### PILZ planning
+
+Industrial robot arm planning (see <a href="https://moveit.picknik.ai/main/doc/how_to_guides/pilz_industrial_motion_planner/pilz_industrial_motion_planner.html">reference</a>), which is likely too stringent and slow for walk-gait:
+
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
+    # on another window, first move to the starting position
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.09, z: 0.135, use_cartesian_path: false}" 
+    ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk4"}"
+
+Also, use the following to track the rasp pi cpu temperature in case the planning is overclocking the CPU:
+
+    sudo vcgencmd measure_temp
+
+#### IPTP planning
+
+The usual moveit execution always stops at each pose before starting another; the Iterative Parabolic Time Parameterization (IPTP) on a manually constructed joint trajectory should smooth out the walk-gait.
+
 ## Training with Isaac Sim
 
 ### Hardware
