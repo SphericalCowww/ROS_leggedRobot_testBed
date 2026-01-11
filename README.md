@@ -230,6 +230,7 @@ Launch the MoveIt assistance:
     # Start Screen: can toggle visual/collision
     # Self-Collisions => Generate Collision Matrix: removes all never-in-contact and adjacent collisions
     # Virtual Joints => Add Virtual Joint => Virtual Joint Name: virtual_joint => Parent Frame Name: world => Joint Type: fixed => Save
+    ## no need if already defined in urdf. Can always comment out afterwards in /src/my_robot_moveit_config/config/my_robot.srdf 
     # Planning Groups => Add Group => Group Name: leg1 => Kinametic Solver: kdl_kinematics_plugin => Add Joints => 
     ## choose with right arrow "servo1_servo1_padding", "servo2_servo2_padding", "servo3_calfFeet", and "calfFeet_calfSphere" => Save
     # Robot Poses => Add Pose => all joints at 0 => Pose Name: home => Save: can add a few other ones for debugging
