@@ -366,7 +366,7 @@ Also, use the following to track the rasp pi cpu temperature in case the plannin
 
 #### IPTP planning
 
-The usual moveit execution always stops at each pose before starting another; the Iterative Parabolic Time Parameterization (IPTP) on a manually constructed joint trajectory should smooth out the walk-gait.
+The usual moveit execution always stops at each pose before starting another. The Iterative Parabolic Time Parameterization (IPTP) on a manually constructed joint trajectory should smooth out the walk-gait. This requires using setApproximateJointValueTarget to translate the end-effector-position to the corresponding servo-positions to form the joint trajectory (like a chain of 10 points) to traverse through.
 
 ## Training with Isaac Sim
 
