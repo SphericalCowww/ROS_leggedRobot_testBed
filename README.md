@@ -357,7 +357,7 @@ Industrial robot arm planning (see <a href="https://moveit.picknik.ai/main/doc/h
     source install/setup.bash
     ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
     # on another window, first move to the starting position
-    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.135, use_cartesian_path: false}" 
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
     ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk4"}"
 
 Also, use the following to track the rasp pi cpu temperature in case the planning is overclocking the CPU:
