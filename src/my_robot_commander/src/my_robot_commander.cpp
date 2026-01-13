@@ -210,8 +210,8 @@ class my_robot_commander_class
             } else if (name == "walk4") {
                 leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
                 double x0 = -0.09;  
-                double y0 = 0.01;
-                double z0 = 0.135; 
+                double y0 =  0.01;
+                double z0 =  0.13; 
                 double traj_arc_rad = 0.04; 
 
                 geometry_msgs::msg::Pose pose_start = endEffector_pose_.pose;
@@ -232,77 +232,40 @@ class my_robot_commander_class
                    RCLCPP_ERROR(node_->get_logger(), 
                                 "leg1SetWalkTarget(): error waiting for action server /sequence_move_group");
                 }
-                moveit_msgs::msg::MotionSequenceRequest sequence_request;
                 moveit_msgs::msg::RobotState start_state_msg;
                 moveit::core::robotStateToRobotStateMsg(*current_state_, start_state_msg);
- 
+                
+                moveit_msgs::msg::MotionSequenceRequest sequence_request;
+                
                 moveit_msgs::msg::MotionSequenceItem traj1;
                 traj1.req.start_state = start_state_msg;
-                traj1.blend_radius = 0.01;
-                traj1.req.pipeline_id = "pilz_industrial_motion_planner";
-                traj1.req.group_name  = planning_group_;
+                traj1.blend_radius    = 0.01;
                 traj1.req.planner_id  = "LIN"; 
-                traj1.req.allowed_planning_time           = 5.0;
-                traj1.req.max_velocity_scaling_factor     = 0.1;
-                traj1.req.max_acceleration_scaling_factor = 0.1;
-                traj1.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
-                traj1.req.workspace_parameters.min_corner.x    = -1.0;
-                traj1.req.workspace_parameters.min_corner.y    = -1.0;
-                traj1.req.workspace_parameters.min_corner.z    = -1.0;
-                traj1.req.workspace_parameters.max_corner.x    = 1.0;
-                traj1.req.workspace_parameters.max_corner.y    = 1.0;
-                traj1.req.workspace_parameters.max_corner.z    = 1.0;
+                traj_wrap_(traj1);
                 traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
                 sequence_request.items.push_back(traj1);
 
                 moveit_msgs::msg::MotionSequenceItem traj2;
-                traj2.blend_radius = 0.01;
-                traj2.req.pipeline_id = "pilz_industrial_motion_planner";
-                traj2.req.group_name  = planning_group_;
-                traj2.req.planner_id  = "LIN";
-                traj2.req.allowed_planning_time           = 5.0;
-                traj2.req.max_velocity_scaling_factor     = 0.1;
-                traj2.req.max_acceleration_scaling_factor = 0.1;
-                traj2.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
-                traj2.req.workspace_parameters.min_corner.x    = -1.0;
-                traj2.req.workspace_parameters.min_corner.y    = -1.0;
-                traj2.req.workspace_parameters.min_corner.z    = -1.0;
-                traj2.req.workspace_parameters.max_corner.x    = 1.0;
-                traj2.req.workspace_parameters.max_corner.y    = 1.0;
-                traj2.req.workspace_parameters.max_corner.z    = 1.0;
+                traj2.blend_radius   = 0.01;
+                traj2.req.planner_id = "LIN";
+                traj_wrap_(traj2);
                 traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_top));
                 sequence_request.items.push_back(traj2);
 
                 moveit_msgs::msg::MotionSequenceItem traj3;
-                traj3.blend_radius = 0.0;                       //last one must be 0
-                traj3.req.pipeline_id = "pilz_industrial_motion_planner";
-                traj3.req.group_name  = planning_group_;
-                traj3.req.planner_id  = "LIN";
-                traj3.req.allowed_planning_time           = 5.0;
-                traj3.req.max_velocity_scaling_factor     = 0.1;
-                traj3.req.max_acceleration_scaling_factor = 0.1;
-                traj3.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
-                traj3.req.workspace_parameters.min_corner.x    = -1.0;
-                traj3.req.workspace_parameters.min_corner.y    = -1.0;
-                traj3.req.workspace_parameters.min_corner.z    = -1.0;
-                traj3.req.workspace_parameters.max_corner.x    = 1.0;
-                traj3.req.workspace_parameters.max_corner.y    = 1.0;
-                traj3.req.workspace_parameters.max_corner.z    = 1.0;
+                traj3.blend_radius   = 0.0;                       //last one must be 0
+                traj3.req.planner_id = "LIN";
+                traj_wrap_(traj3);
                 traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                 sequence_request.items.push_back(traj3);
 
                 while (rclcpp::ok() && is_walking_) {
-                    //sequence_request.items.clear();        
-                    //sequence_request.items.push_back(traj1);
-                    //sequence_request.items.push_back(traj2);
-                    //sequence_request.items.push_back(traj3);                
-     
                     leg1_load_current_state_();
                     moveit::core::robotStateToRobotStateMsg(*current_state_,
                                                             sequence_request.items[0].req.start_state);
                     auto goal_msg = MoveGroupSequence::Goal();
                     goal_msg.request = sequence_request;
-                    goal_msg.planning_options.planning_scene_diff.is_diff = true;
+                    goal_msg.planning_options.planning_scene_diff.is_diff             = true;
                     goal_msg.planning_options.planning_scene_diff.robot_state.is_diff = true;
                     auto goal_handle_future   = action_client->async_send_goal(goal_msg);
                     auto action_result_future = action_client->async_get_result(goal_handle_future.get());
@@ -392,6 +355,20 @@ class my_robot_commander_class
             leg1_interface_->setStartStateToCurrentState();
             //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); // faster, but risk stalling
         }
+        void traj_wrap_(moveit_msgs::msg::MotionSequenceItem &traj) {
+            traj.req.pipeline_id = "pilz_industrial_motion_planner";
+            traj.req.group_name  = planning_group_;
+            traj.req.allowed_planning_time           = 5.0;
+            traj.req.max_velocity_scaling_factor     = 0.1;
+            traj.req.max_acceleration_scaling_factor = 0.1;
+            traj.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
+            traj.req.workspace_parameters.min_corner.x    = -1.0;
+            traj.req.workspace_parameters.min_corner.y    = -1.0;
+            traj.req.workspace_parameters.min_corner.z    = -1.0;
+            traj.req.workspace_parameters.max_corner.x    = 1.0;
+            traj.req.workspace_parameters.max_corner.y    = 1.0;
+            traj.req.workspace_parameters.max_corner.z    = 1.0;
+        }
         moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
                                                               const geometry_msgs::msg::Pose& pose) {
             geometry_msgs::msg::PoseStamped stamped_pose;
@@ -404,35 +381,6 @@ class my_robot_commander_class
             return kinematic_constraints::constructGoalConstraints(link_name, stamped_pose, tolerance_pos, 
                                                                    tolerance_ang);
         }
-        /*
-        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
-                                                              const geometry_msgs::msg::Pose& pose,
-                                                              const std::string& name = "") {
-            moveit_msgs::msg::Constraints constraints;
-            if (!name.empty()) constraints.name = name;
-
-            moveit_msgs::msg::PositionConstraint pos_constraint;
-            pos_constraint.header.frame_id = leg1_interface_->getPlanningFrame();
-            pos_constraint.link_name       = link_name;
-            shape_msgs::msg::SolidPrimitive box;
-            box.type = shape_msgs::msg::SolidPrimitive::BOX;
-            box.dimensions = {1.0, 1.0, 1.0}; 
-            pos_constraint.constraint_region.primitives.push_back(box);
-            pos_constraint.constraint_region.primitive_poses.push_back(pose);
-            constraints.position_constraints.push_back(pos_constraint);
-
-            moveit_msgs::msg::OrientationConstraint ori_constraint;
-            ori_constraint.header.frame_id = leg1_interface_->getPlanningFrame();
-            ori_constraint.link_name       = link_name;
-            ori_constraint.orientation = pose.orientation;
-            ori_constraint.absolute_x_axis_tolerance = 2*M_PI;   // large tolerance for position_only_ik
-            ori_constraint.absolute_y_axis_tolerance = 2*M_PI;
-            ori_constraint.absolute_z_axis_tolerance = 2*M_PI;
-            constraints.orientation_constraints.push_back(ori_constraint);
-
-            return constraints;
-        }
-        */
         std::shared_ptr<rclcpp::Node> node_;
         rclcpp::CallbackGroup::SharedPtr reentrant_group_;
         std::shared_ptr<MoveGroupInterface> leg1_interface_;
