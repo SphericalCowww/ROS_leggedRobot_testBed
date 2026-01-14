@@ -358,15 +358,21 @@ Industrial robot arm planning (see <a href="https://moveit.picknik.ai/main/doc/h
     ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
     # on another window, first move to the starting position
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
-    ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk4"}"
+    ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk5"}"
 
 Also, use the following to track the rasp pi cpu temperature in case the planning is overclocking the CPU:
 
     sudo vcgencmd measure_temp
 
+While PILZ does allow Cartesian planning and smooth transition between trajectories, its motion is still on the slow side:
+
+[Video demo1](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait1_1Leg.mp4)
+
 #### IPTP planning
 
 The usual moveit execution always stops at each pose before starting another. The Iterative Parabolic Time Parameterization (IPTP) on a manually constructed joint trajectory should smooth out the walk-gait. This requires using setApproximateJointValueTarget to translate the end-effector-position to the corresponding servo-positions to form the joint trajectory (like a chain of 10 points) to traverse through.
+
+
 
 ## Training with Isaac Sim
 
