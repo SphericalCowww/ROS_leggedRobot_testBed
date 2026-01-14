@@ -18,6 +18,8 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
+using MoveGroupSequence  = moveit_msgs::action::MoveGroupSequence;
+using ExecuteTrajectory  = moveit_msgs::action::ExecuteTrajectory;
 using namespace std::placeholders;                  // for using _1
 using ros_string   = example_interfaces::msg::String;
 using ros_array    = example_interfaces::msg::Float64MultiArray;
@@ -57,8 +59,6 @@ class my_robot_commander_class
                 std::bind(&my_robot_commander_class::leg1PoseCallback,  this, _1), sub_options);
             leg1_walk_subscriber_  = node_->create_subscription<ros_string>  ("/leg1_set_walk",  10,
                 std::bind(&my_robot_commander_class::leg1WalkCallback,  this, _1), sub_options);
-
-            sequence_client_ = node_->create_client<moveit_msgs::srv::GetMotionSequence>("/plan_sequence_path");
 
             leg1_load_current_state_();
             RCLCPP_INFO(node_->get_logger(), "constructor(): current end effector (x, y, z) = (%lf, %lf, %lf)",
@@ -239,22 +239,22 @@ class my_robot_commander_class
                 
                 moveit_msgs::msg::MotionSequenceItem traj1;
                 traj1.req.start_state = start_state_msg;
-                traj1.blend_radius    = 0.01;
+                traj1.blend_radius    = 0.001;
                 traj1.req.planner_id  = "LIN"; 
                 traj_wrap_(traj1);
                 traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
                 sequence_request.items.push_back(traj1);
 
                 moveit_msgs::msg::MotionSequenceItem traj2;
-                traj2.blend_radius   = 0.01;
-                traj2.req.planner_id = "LIN";
+                traj2.blend_radius   = 0.001;
+                traj2.req.planner_id = "PTP";
                 traj_wrap_(traj2);
                 traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_top));
                 sequence_request.items.push_back(traj2);
 
                 moveit_msgs::msg::MotionSequenceItem traj3;
                 traj3.blend_radius   = 0.0;                       //last one must be 0
-                traj3.req.planner_id = "LIN";
+                traj3.req.planner_id = "PTP";
                 traj_wrap_(traj3);
                 traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
                 sequence_request.items.push_back(traj3);
@@ -293,6 +293,89 @@ class my_robot_commander_class
                         RCLCPP_ERROR(node_->get_logger(),  "leg1SetWalkTarget(): action failed");
                     }
                     //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                }
+            } else if (name == "walk5") {
+                leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
+                double x0 = -0.09;  
+                double y0 =  0.01;
+                double z0 =  0.13; 
+                double traj_arc_rad = 0.04; 
+
+                geometry_msgs::msg::Pose pose_0 = endEffector_pose_.pose;
+                pose_0.position.x = x0; 
+                pose_0.position.y = y0; 
+                pose_0.position.z = z0;
+
+                geometry_msgs::msg::Pose pose_1 = pose_0;
+                pose_1.position.y = y0 + 2*traj_arc_rad;
+
+                geometry_msgs::msg::Pose pose_2 = pose_0;
+                pose_2.position.y = y0 + traj_arc_rad;
+                pose_2.position.z = z0 - traj_arc_rad;
+
+                moveit_msgs::msg::MotionSequenceRequest sequence_request;
+                moveit_msgs::msg::RobotState start_state_msg;
+                moveit::core::robotStateToRobotStateMsg(*current_state_, start_state_msg);
+                moveit_msgs::msg::MotionSequenceItem traj1, traj2, traj3;
+                traj1.req.start_state = start_state_msg;
+                traj1.blend_radius    = 0.0;
+                traj1.req.planner_id  = "LIN"; 
+                traj_wrap_(traj1);
+                traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_1));
+                traj2.blend_radius   = 0.0;
+                traj2.req.planner_id = "LIN";
+                traj_wrap_(traj2);
+                traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_2));
+                traj3.blend_radius   = 0.0;                       //last one must be 0
+                traj3.req.planner_id = "LIN";
+                traj_wrap_(traj3);
+                traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_0));
+                sequence_request.items.push_back(traj1);
+                sequence_request.items.push_back(traj2);
+                sequence_request.items.push_back(traj3);
+                
+                auto sequence_action_client = rclcpp_action::create_client<MoveGroupSequence>(node_,
+                                                                                              "/sequence_move_group");
+                sequence_action_client->wait_for_action_server(std::chrono::seconds(5));
+                auto sequence_goal = moveit_msgs::action::MoveGroupSequence::Goal();
+                sequence_goal.request = sequence_request;
+                sequence_goal.planning_options.plan_only = true;
+                auto sequence_goal_future   = sequence_action_client->async_send_goal (sequence_goal);
+                auto sequence_goal_handle   = sequence_goal_future.get();
+                auto sequence_result_future = sequence_action_client->async_get_result(sequence_goal_handle);
+                auto sequence_result_handle = sequence_result_future.get();
+                auto sequence_result        = sequence_result_handle.result->response;
+                moveit_msgs::msg::RobotTrajectory saved_walking_traj;
+                if (sequence_result.error_code.val == moveit_msgs::msg::MoveItErrorCodes::SUCCESS) {
+                    saved_walking_traj = sequence_result.planned_trajectories[0]; 
+                    RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): trajectory planned");
+                } else {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): trajectory planning failed");
+                }
+
+                auto exec_action_client = rclcpp_action::create_client<ExecuteTrajectory>(node_, 
+                                                                                          "/execute_trajectory");
+                exec_action_client->wait_for_action_server(std::chrono::seconds(5));
+                auto joint_model_group = leg1_interface_->getRobotModel()->getJointModelGroup(planning_group_);
+                std::vector<double> current_positions;
+                while (rclcpp::ok() && is_walking_) {
+                    auto exec_goal = moveit_msgs::action::ExecuteTrajectory::Goal();
+                    exec_goal.trajectory = saved_walking_traj;
+
+                    leg1_load_current_state_(); 
+                    current_state_->copyJointGroupPositions(joint_model_group, current_positions);
+                    if(!exec_goal.trajectory.joint_trajectory.points.empty()) {
+                        exec_goal.trajectory.joint_trajectory.points[0].positions = current_positions;
+                    }
+                    
+                    auto exec_goal_future = exec_action_client->async_send_goal(exec_goal);
+                    auto exec_goal_handle = exec_goal_future.get();
+                    if (exec_goal_handle) {
+                        auto exec_result_future = exec_action_client->async_get_result(exec_goal_handle);
+                        auto exec_result_handle = exec_result_future.get();
+                        RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): step completed");
+                    }
+                    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
         }
@@ -359,7 +442,7 @@ class my_robot_commander_class
             traj.req.pipeline_id = "pilz_industrial_motion_planner";
             traj.req.group_name  = planning_group_;
             traj.req.allowed_planning_time           = 5.0;
-            traj.req.max_velocity_scaling_factor     = 0.1;
+            traj.req.max_velocity_scaling_factor     = 1.0;
             traj.req.max_acceleration_scaling_factor = 0.1;
             traj.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
             traj.req.workspace_parameters.min_corner.x    = -1.0;
@@ -405,8 +488,6 @@ class my_robot_commander_class
         rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
         rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
         rclcpp::Subscription<ros_string>  ::SharedPtr leg1_walk_subscriber_;
-
-        rclcpp::Client<moveit_msgs::srv::GetMotionSequence>::SharedPtr sequence_client_;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
