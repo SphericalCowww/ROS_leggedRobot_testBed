@@ -390,6 +390,34 @@ Planned hardware spec (<a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0
   * 850 Watt
   * 210 x 430 x 444 mm
 
+### Installation
+
+Following the <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/install_workstation.html">installation reference</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links</a>.
+
+    sudo apt update
+    sudo apt install software-properties-common -y
+    sudo add-apt-repository ppa:deadsnakes/ppa -y
+    sudo apt update
+    sudo apt install python3.11 python3.11-venv python3.11-dev
+
+    python3.11 -m venv isaacsim-env
+    source isaacsim-env/bin/activate
+    pip install --upgrade pip
+    pip install isaacsim[compatibility-check]   # do not install any other packages yet
+    isaacsim isaacsim.exp.compatibility_check   # if see orange: Settings => Power => Power Mode => Performance
+    deactivate
+
+    sudo snap install code --classic   # installing Visual Studio Code
+
+    mkdir isaacsim
+    unzip ~/Downloads/isaac-sim-standalone-5.1.0-linux-x86_64.zip -d isaacsim
+    cd isaacsim
+    ./post_install.sh
+    ./isaac-sim.sh # after the initial opening, an APP "Isaac Sim" actually appears
+
+    # check also APP "NVIDIA X Server Settings" to adjust GPU settings
+    sudo apt install nvtop
+    nvtop                        # for monitoring GPU
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
