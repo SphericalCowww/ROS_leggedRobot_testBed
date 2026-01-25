@@ -329,16 +329,16 @@ class my_robot_commander_class
                 moveit::core::robotStateToRobotStateMsg(*current_state_, start_state_msg);
                 moveit_msgs::msg::MotionSequenceItem traj1, traj2, traj3;
                 traj1.req.start_state = start_state_msg;
-                traj1.blend_radius    = 0.0;
+                traj1.blend_radius    = 0.02;
                 traj1.req.planner_id  = "LIN"; 
                 traj_wrap_(traj1);
                 traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_1));
-                traj2.blend_radius   = 0.0;
-                traj2.req.planner_id = "LIN";
+                traj2.blend_radius   = 0.02;
+                traj2.req.planner_id = "PTP";
                 traj_wrap_(traj2);
                 traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_2));
                 traj3.blend_radius   = 0.0;                       //last one must be 0
-                traj3.req.planner_id = "LIN";
+                traj3.req.planner_id = "PTP";
                 traj_wrap_(traj3);
                 traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_0));
                 sequence_request.items.push_back(traj1);
@@ -443,6 +443,9 @@ class my_robot_commander_class
                 }
                 moveit_msgs::msg::RobotTrajectory traj_msg;
                 traj->getRobotTrajectoryMsg(traj_msg);
+                auto exec_action_client = rclcpp_action::create_client<ExecuteTrajectory>(node_,
+                                                                                          "/execute_trajectory");
+                exec_action_client->wait_for_action_server(std::chrono::seconds(5));
                 std::vector<double> current_positions;
                 //leg1_load_current_state_();
                 while (rclcpp::ok() && is_walking_) {
@@ -531,7 +534,7 @@ class my_robot_commander_class
             traj.req.group_name  = planning_group_;
             traj.req.allowed_planning_time           = 5.0;
             traj.req.max_velocity_scaling_factor     = 1.0;
-            traj.req.max_acceleration_scaling_factor = 0.1;
+            traj.req.max_acceleration_scaling_factor = 0.3; // any higher the planning fails
             traj.req.workspace_parameters.header.frame_id = leg1_interface_->getPlanningFrame();
             traj.req.workspace_parameters.min_corner.x    = -1.0;
             traj.req.workspace_parameters.min_corner.y    = -1.0;
