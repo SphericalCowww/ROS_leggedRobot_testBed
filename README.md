@@ -242,7 +242,7 @@ Launch the MoveIt assistance:
 
 Fix the following file:
 
-    # src/my_robot_moveit_config/config/joint_limits.yaml => max_velocity: 1.0, has_acceleration_limits: true, max_acceleration: 1.0 (need to be float)
+    # src/my_robot_moveit_config/config/joint_limits.yaml => max_velocity: 20.0, has_acceleration_limits: true, max_acceleration: 10.0 (need to be float)
     # src/my_robot_moveit_config/config/moveit_controllers.yaml => add the following under leg1_controller: 
     ## action_ns: follow_joint_trajectory
     ## default: true
@@ -363,8 +363,6 @@ Industrial robot arm planning (see <a href="https://moveit.picknik.ai/main/doc/h
 Also, use the following to track the rasp pi cpu temperature in case the planning is overclocking the CPU:
 
     sudo vcgencmd measure_temp
-
-While PILZ does allow Cartesian planning and smooth transition between trajectories, its motion is still on the slow side:
 
 [Video demo1](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait1_1Leg.mp4)
 
