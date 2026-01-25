@@ -16,6 +16,12 @@
 #include <moveit/kinematic_constraints/utils.hpp>
 #include <moveit/robot_state/conversions.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
+
+#include <moveit/robot_state/robot_state.hpp>
+#include <moveit/robot_model/robot_model.hpp>
+#include <moveit/robot_trajectory/robot_trajectory.hpp>
+#include <moveit/trajectory_processing/time_optimal_trajectory_generation.hpp>
+#include <trajectory_msgs/msg/joint_trajectory_point.hpp>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
 using MoveGroupSequence  = moveit_msgs::action::MoveGroupSequence;
@@ -135,6 +141,7 @@ class my_robot_commander_class
                 {-0.09, 0.05, 0.08},
                 {-0.09, 0.01, 0.135},
             };
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (name == "walk1") {
                 while (rclcpp::ok() && (is_walking_ == true)) {
                     for (auto& pt : step_points) {
@@ -142,6 +149,7 @@ class my_robot_commander_class
                         leg1SetPoseTarget(pt[0], pt[1], pt[2], false); 
                     }
                 }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else if (name == "walk2") {
                 std::vector<geometry_msgs::msg::Pose> waypoints;
                 waypoints.push_back(endEffector_pose_.pose);
@@ -165,6 +173,7 @@ class my_robot_commander_class
                                                           fraction, cartesianConstraintFractionThreshold_);
                     }
                 }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else if (name == "walk3") {
                 double z0 = 0.135; 
                 double y0 = 0.09;
@@ -207,6 +216,7 @@ class my_robot_commander_class
                     }
                     leg1_load_current_state_();
                 }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else if (name == "walk4") {
                 leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
                 double x0 = -0.09;  
@@ -294,8 +304,8 @@ class my_robot_commander_class
                     }
                     //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                 }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else if (name == "walk5") {
-                leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
                 double x0 = -0.09;  
                 double y0 =  0.01;
                 double z0 =  0.13; 
@@ -312,7 +322,8 @@ class my_robot_commander_class
                 geometry_msgs::msg::Pose pose_2 = pose_0;
                 pose_2.position.y = y0 + traj_arc_rad;
                 pose_2.position.z = z0 - traj_arc_rad;
-
+        
+                leg1_interface_->setPlanningPipelineId("pilz_industrial_motion_planner");
                 moveit_msgs::msg::MotionSequenceRequest sequence_request;
                 moveit_msgs::msg::RobotState start_state_msg;
                 moveit::core::robotStateToRobotStateMsg(*current_state_, start_state_msg);
@@ -377,8 +388,85 @@ class my_robot_commander_class
                     }
                     //std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
+            } else if (name == "walk6") {
+                double x0 = -0.09;
+                double y0 =  0.01;
+                double z0 =  0.13;
+                double traj_arc_rad = 0.04;
+
+                geometry_msgs::msg::Pose pose_0 = endEffector_pose_.pose;
+                pose_0.position.x = x0;
+                pose_0.position.y = y0;
+                pose_0.position.z = z0;
+
+                geometry_msgs::msg::Pose pose_1 = pose_0;
+                pose_1.position.y = y0 + 2*traj_arc_rad;
+
+                geometry_msgs::msg::Pose pose_2 = pose_0;
+                pose_2.position.y = y0 + traj_arc_rad;
+                pose_2.position.z = z0 - traj_arc_rad;
+
+                leg1_load_current_state_();
+                auto joint_model_group = current_state_->getJointModelGroup(planning_group_);
+                moveit::core::RobotState state_0(*current_state_);
+                moveit::core::RobotState state_1(*current_state_);
+                moveit::core::RobotState state_2(*current_state_);
+                success_ = state_0.setFromIK(joint_model_group, pose_0); 
+                if (success_ == false) {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): IK failed for pose_0");
+                    return; 
+                }
+                success_ = state_1.setFromIK(joint_model_group, pose_1); 
+                if (success_ == false) {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): IK failed for pose_1");
+                    return;
+                }
+                success_ = state_2.setFromIK(joint_model_group, pose_2);
+                if (success_ == false) {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): IK failed for pose_2");
+                    return;
+                } 
+
+                auto traj = std::make_shared<robot_trajectory::RobotTrajectory>(leg1_interface_->getRobotModel(), 
+                                                                                planning_group_);
+                traj->addSuffixWayPoint(state_0, 0.0);
+                traj->addSuffixWayPoint(state_1, 0.0);
+                traj->addSuffixWayPoint(state_2, 0.0);
+                traj->addSuffixWayPoint(state_0, 0.0);
+
+                trajectory_processing::TimeOptimalTrajectoryGeneration traj_gen;
+                success_ = traj_gen.computeTimeStamps(*traj, 1.0, 0.8); // frac of vel, accel from joint_limits.yaml
+                if (success_ == false) {
+                    RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): traj timing generation failed");
+                    return;
+                }
+                moveit_msgs::msg::RobotTrajectory traj_msg;
+                traj->getRobotTrajectoryMsg(traj_msg);
+                std::vector<double> current_positions;
+                //leg1_load_current_state_();
+                while (rclcpp::ok() && is_walking_) {
+                    auto exec_goal = moveit_msgs::action::ExecuteTrajectory::Goal();
+                    exec_goal.trajectory = traj_msg;
+
+                    leg1_load_current_state_(); 
+                    current_state_->copyJointGroupPositions(joint_model_group, current_positions);
+                    if(!exec_goal.trajectory.joint_trajectory.points.empty()) {
+                        exec_goal.trajectory.joint_trajectory.points[0].positions = current_positions;
+                    }
+
+                    auto exec_goal_future = exec_action_client->async_send_goal(exec_goal);
+                    auto exec_goal_handle = exec_goal_future.get(); 
+                    if (exec_goal_handle) {
+                        auto exec_result_future = exec_action_client->async_get_result(exec_goal_handle);
+                        auto exec_result_handle = exec_result_future.get();
+                        RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): step completed");
+                    }
+                }
             }
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private:
         void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface) {
             MoveGroupInterface::Plan plan;
@@ -425,7 +513,7 @@ class my_robot_commander_class
                 }
             }
         }
-        ////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         void leg1_load_current_state_() {
             current_state_ = leg1_interface_->getCurrentState(0.5);     // wait up to 0.5 seconds 
             if (!current_state_) {

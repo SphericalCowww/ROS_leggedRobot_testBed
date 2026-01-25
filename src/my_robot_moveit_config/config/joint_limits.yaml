@@ -10,16 +10,16 @@ default_acceleration_scaling_factor: 0.1
 joint_limits:
   servo1_servo1_padding:
     has_velocity_limits: true
-    max_velocity: 5.0
+    max_velocity: 10.0
     has_acceleration_limits: true
-    max_acceleration: 5.0
+    max_acceleration: 20.0
   servo2_servo2_padding:
     has_velocity_limits: true
-    max_velocity: 5.0
+    max_velocity: 10.0
     has_acceleration_limits: true
-    max_acceleration: 5.0
+    max_acceleration: 20.0
   servo3_calfFeet:
     has_velocity_limits: true
-    max_velocity: 5.0
+    max_velocity: 10.0
     has_acceleration_limits: true
-    max_acceleration: 5.0
+    max_acceleration: 20.0
