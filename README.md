@@ -366,11 +366,16 @@ Also, use the following to track the rasp pi cpu temperature in case the plannin
 
 [Video demo1](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait1_1Leg.mp4)
 
-#### IPTP planning
+#### IPTP/TOTG planning
 
-The usual moveit execution always stops at each pose before starting another. The Iterative Parabolic Time Parameterization (IPTP) on a manually constructed joint trajectory should smooth out the walk-gait. This requires using setApproximateJointValueTarget to translate the end-effector-position to the corresponding servo-positions to form the joint trajectory (like a chain of 10 points) to traverse through.
+The usual moveit execution always stops at each pose before starting another. The Iterative Parabolic Time Parameterization (IPTP) or Time Optimal Trajectory Generation (TOTG) on a manually constructed joint trajectory should smooth out the walk-gait. The IK can be taken out of the while loop too, reducing the processing time of repeated motion.
 
-
+    colcon build
+    source install/setup.bash
+    ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
+    # on another window, first move to the starting position
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
+    ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk6"}"
 
 ## Training with Isaac Sim
 
