@@ -58,9 +58,9 @@ def generate_launch_description():
         package="my_robot_commander",
         executable="my_robot_commander",
         parameters=[
-            moveit_config.robot_description,           # The URDF math
-            moveit_config.robot_description_semantic,  # The SRDF (defines 'leg1')
-            moveit_config.robot_description_kinematics,# The kinematics.yaml (THE MISSING PIECE)
+            moveit_config.robot_description,           # the URDF math
+            moveit_config.robot_description_semantic,  # the SRDF (defines 'leg1')
+            moveit_config.robot_description_kinematics,# the kinematics.yaml
             {"jump_threshold": 0.15},                  # for computeCartesianPath
         ],
     )

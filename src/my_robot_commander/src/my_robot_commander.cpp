@@ -20,6 +20,8 @@
 #include <moveit/robot_state/robot_state.hpp>
 #include <moveit/robot_model/robot_model.hpp>
 #include <moveit/robot_trajectory/robot_trajectory.hpp>
+//#include <moveit/trajectory_processing/iterative_time_parameterization.h>
+//#include <moveit/trajectory_processing/iterative_spline_parameterization.h>
 #include <moveit/trajectory_processing/time_optimal_trajectory_generation.hpp>
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,7 +445,7 @@ class my_robot_commander_class
                 }
                 moveit_msgs::msg::RobotTrajectory traj_msg;
                 traj->getRobotTrajectoryMsg(traj_msg);
-                auto exec_action_client = rclcpp_action::create_client<ExecuteTrajectory>(node_,
+                auto exec_action_client = rclcpp_action::create_client<ExecuteTrajectory>(node_, 
                                                                                           "/execute_trajectory");
                 exec_action_client->wait_for_action_server(std::chrono::seconds(5));
                 std::vector<double> current_positions;
@@ -459,11 +461,30 @@ class my_robot_commander_class
                     }
 
                     auto exec_goal_future = exec_action_client->async_send_goal(exec_goal);
+                    if (exec_goal_future.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
+                        RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): timeout waiting for goal response");
+                        break;
+                    }
                     auto exec_goal_handle = exec_goal_future.get(); 
                     if (exec_goal_handle) {
                         auto exec_result_future = exec_action_client->async_get_result(exec_goal_handle);
-                        auto exec_result_handle = exec_result_future.get();
-                        RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): step completed");
+                        bool step_finished = false;
+                        while (rclcpp::ok() && is_walking_ && !step_finished) {
+                            auto exec_result_status = exec_result_future.wait_for(std::chrono::milliseconds(10));
+                            if (exec_result_status == std::future_status::ready) {
+                                step_finished = true;
+                                RCLCPP_INFO(node_->get_logger(), "leg1SetWalkTarget(): step completed");
+                            }
+                        }
+                        if (!is_walking_ && !step_finished) {
+                            RCLCPP_WARN(node_->get_logger(), 
+                                        "leg1SetWalkTarget(): interrupt received; canceling trajectory.");
+                            exec_action_client->async_cancel_goal(exec_goal_handle);
+                            break; 
+                        }
+                    } else {
+                        RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): goal rejected by server");
+                        break;
                     }
                 }
             }
