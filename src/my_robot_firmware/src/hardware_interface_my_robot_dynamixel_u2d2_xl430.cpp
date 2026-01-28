@@ -13,15 +13,14 @@ namespace my_robot_namespace {
             hardware_interface::CallbackReturn::SUCCESS) {
             return hardware_interface::CallbackReturn::ERROR;
         }
-        node_ = std::make_shared<rclcpp::Node>("HardwareInterfaceU2D2_my_robot_node");
-        RCLCPP_INFO(node_->get_logger(), "on_init()");
+        RCLCPP_INFO(get_logger(), "on_init()");
 
         dxl_return_ = dxl_wb_.init(PORT_NAME, BAUD_RATE, &log_);
         if (dxl_return_ == false) {
-            RCLCPP_ERROR(node_->get_logger(), "on_init(): failed to open the port %s!", PORT_NAME);
+            RCLCPP_ERROR(get_logger(), "on_init(): failed to open the port %s!", PORT_NAME);
             return hardware_interface::CallbackReturn::ERROR;
         } else {
-            RCLCPP_INFO(node_->get_logger(), "on_init(): initialize with baud rate: %d", BAUD_RATE);
+            RCLCPP_INFO(get_logger(), "on_init(): initialize with baud rate: %d", BAUD_RATE);
         } 
 
 
@@ -43,26 +42,26 @@ namespace my_robot_namespace {
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_configure 
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "on_configure()");
+        RCLCPP_INFO(get_logger(), "on_configure()");
         (void) previous_state;
         
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) {
             dxl_return_ = dxl_wb_.ping(servo_channels_[servo_idx], &model_number_, &log_);
             if (dxl_return_ == false) {
-                RCLCPP_ERROR(node_->get_logger(), "on_configure(): failed to ping!");
+                RCLCPP_ERROR(get_logger(), "on_configure(): failed to ping!");
                 return hardware_interface::CallbackReturn::ERROR;
             } else {
-                RCLCPP_INFO(node_->get_logger(), "on_configure(): pinging id: %d, model_number : %d\n", 
-                                                 servo_channels_[servo_idx], model_number_);
+                RCLCPP_INFO(get_logger(), "on_configure(): pinging id: %d, model_number : %d\n", 
+                                          servo_channels_[servo_idx], model_number_);
             }
             // int32_t velocity = 0, int32_t acceleration = 0 => position mode
             dxl_return_ = dxl_wb_.jointMode(servo_channels_[servo_idx], 0, 0, &log_);
             if (dxl_return_ == false) {
-                RCLCPP_ERROR(node_->get_logger(), "on_configure(): failed join position mode!");
+                RCLCPP_ERROR(get_logger(), "on_configure(): failed join position mode!");
                 return hardware_interface::CallbackReturn::ERROR;
             } else {
-                RCLCPP_INFO(node_->get_logger(), "on_configure(): position mode for ch %d, model_number : %d\n", 
-                                                 servo_channels_[servo_idx], model_number_);
+                RCLCPP_INFO(get_logger(), "on_configure(): position mode for ch %d, model_number : %d\n", 
+                                          servo_channels_[servo_idx], model_number_);
             }
         }
         dxl_wb_.addSyncReadHandler(servo_channels_[0], "Present_Position", &log_);
@@ -78,7 +77,7 @@ namespace my_robot_namespace {
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_activate  
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "on_activate()");
+        RCLCPP_INFO(get_logger(), "on_activate()");
         (void) previous_state;
        
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) initialize_servo_(servo_idx);
@@ -91,7 +90,7 @@ namespace my_robot_namespace {
     hardware_interface::CallbackReturn HardwareInterfaceU2D2_my_robot::on_deactivate
         (const rclcpp_lifecycle::State & previous_state) 
     {
-        RCLCPP_INFO(node_->get_logger(), "on_deactivate()");
+        RCLCPP_INFO(get_logger(), "on_deactivate()");
         (void) previous_state;
         for (uint8_t servo_idx = 0; servo_idx < servo_N_; servo_idx++) initialize_servo_(servo_idx);
         dxl_return_ = dxl_wb_.syncWrite(handler_index_write_pos_, servo_channels_, servo_N_, dxl_positions_, 1,&log_);
@@ -102,7 +101,7 @@ namespace my_robot_namespace {
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::read 
         (const rclcpp::Time & time, const rclcpp::Duration & period) 
     {
-        RCLCPP_DEBUG(node_->get_logger(), "read()");
+        RCLCPP_DEBUG(get_logger(), "read()");
         (void) period;
         if (write_first_call_ == true) {
             start_time_ = time;
@@ -112,7 +111,7 @@ namespace my_robot_namespace {
     
         dxl_return_ = dxl_wb_.syncRead(handler_index_read_pos_, servo_channels_, servo_N_, &log_);
         if (dxl_return_ == false) {
-            RCLCPP_ERROR(node_->get_logger(), "read(): syncRead fails");
+            RCLCPP_ERROR(get_logger(), "read(): syncRead fails");
             return hardware_interface::return_type::ERROR;
         }
         dxl_wb_.getSyncReadData(handler_index_read_pos_, servo_channels_, servo_N_, dxl_positions_,  &log_);
@@ -134,7 +133,7 @@ namespace my_robot_namespace {
     hardware_interface::return_type HardwareInterfaceU2D2_my_robot::write
         (const rclcpp::Time & time, const rclcpp::Duration & period) 
     {
-        RCLCPP_DEBUG(node_->get_logger(), "write()");
+        RCLCPP_DEBUG(get_logger(), "write()");
         (void) time;
         (void) period; 
         
@@ -146,7 +145,7 @@ namespace my_robot_namespace {
         }
         dxl_return_ = dxl_wb_.syncWrite(handler_index_write_pos_, servo_channels_, servo_N_, dxl_positions_, 1,&log_);
         if (dxl_return_ == false) {
-            RCLCPP_ERROR(node_->get_logger(), "write(): syncWrite fails");
+            RCLCPP_ERROR(get_logger(), "write(): syncWrite fails");
             return hardware_interface::return_type::ERROR;
         }
         return hardware_interface::return_type::OK;
