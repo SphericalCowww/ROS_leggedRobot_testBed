@@ -374,8 +374,11 @@ The usual moveit execution always stops at each pose before starting another. Th
     source install/setup.bash
     ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
     # on another window, first move to the starting position
-    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
     ros2 topic pub -1 /leg1_set_walk example_interfaces/msg/String "{data: "walk6"}"
+
+Note, turns out IPTP is not supported by the newest moveit2 by default.
+
+[Video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait2_1Leg.mp4)
 
 ## Training with Isaac Sim
 
