@@ -61,6 +61,7 @@ def generate_launch_description():
             moveit_config.robot_description,           # the URDF math
             moveit_config.robot_description_semantic,  # the SRDF (defines 'leg1')
             moveit_config.robot_description_kinematics,# the kinematics.yaml
+            moveit_config.joint_limits,                # the joint_limits.yaml 
             {"jump_threshold": 0.15},                  # for computeCartesianPath
         ],
     )

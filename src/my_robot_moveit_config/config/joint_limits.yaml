@@ -23,3 +23,8 @@ joint_limits:
     max_velocity: 10.0
     has_acceleration_limits: true
     max_acceleration: 20.0
+  servo3_calfJoint:
+    has_velocity_limits: true
+    max_velocity: 10.0
+    has_acceleration_limits: true
+    max_acceleration: 20.0 

@@ -435,7 +435,7 @@ class my_robot_commander_class
                 traj->addSuffixWayPoint(state_0, 0.0);
                 traj->addSuffixWayPoint(state_1, 0.0);
                 traj->addSuffixWayPoint(state_2, 0.0);
-                traj->addSuffixWayPoint(state_0, 0.0);
+                //traj->addSuffixWayPoint(state_0, 0.0);
 
                 trajectory_processing::TimeOptimalTrajectoryGeneration traj_gen;
                 success_ = traj_gen.computeTimeStamps(*traj, 1.0, 0.8); // frac of vel, accel from joint_limits.yaml
