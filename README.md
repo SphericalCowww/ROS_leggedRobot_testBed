@@ -380,6 +380,13 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
 
 [Video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait2_1Leg.mp4)
 
+#### launch with hardware, commander as a lifecycle
+
+    ros2 launch my_robot_bringup my_robot.with_lifecycle.launch.py
+    ros2 lifecycle set /my_robot_lifecycle configure
+    ros2 lifecycle set /my_robot_lifecycle activate
+    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
+
 ## Training with Isaac Sim
 
 ### Hardware
