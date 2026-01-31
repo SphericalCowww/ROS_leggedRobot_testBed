@@ -55,7 +55,7 @@ def generate_launch_description():
         launch_arguments={}.items(),
     )
     lifecycle_node = Node(
-        package="my_robot_lifecycle",
+        package="my_robot_commander",
         executable="my_robot_lifecycle",
         parameters=[
             moveit_config.robot_description,           # the URDF math

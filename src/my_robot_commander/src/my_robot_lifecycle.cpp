@@ -38,6 +38,13 @@ public:
     : rclcpp_lifecycle::LifecycleNode("my_robot_lifecycle", options) {
         RCLCPP_INFO(get_logger(), "constructor(): %s", current_lifecycle_state_.c_str());
 
+        moveit_node_ = std::make_shared<rclcpp::Node>("moveit_interface_node", this->get_namespace(), options);
+        callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+        leg1_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_);
+        if (!leg1_interface_->startStateMonitor(2.0)) {
+            RCLCPP_ERROR(get_logger(), "constructor(): failed to start state monitor");
+        }
+ 
         current_lifecycle_state_ = "state_initialized";
         RCLCPP_INFO(get_logger(), "constructor(): %s", current_lifecycle_state_.c_str());
     }
@@ -45,20 +52,8 @@ public:
     CallbackReturn on_configure(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_configure(): %s", current_lifecycle_state_.c_str());
 
-        callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-        leg1_interface_ = std::make_shared<MoveGroupInterface>(
-            this->get_node_base_interface(),
-            this->get_node_graph_interface(),
-            this->get_node_logging_interface(),
-            this->get_node_services_interface(),
-            planning_group_
-        );
         leg1_interface_->setEndEffectorLink(endEffector_link_);
         leg1_interface_->setPlanningTime(5.0);
-        if (!leg1_interface_->startStateMonitor(2.0)) {
-            RCLCPP_ERROR(get_logger(), "on_configure(): failed to start state monitor");
-            return CallbackReturn::FAILURE;
-        }
         
         leg1_load_current_robot_state_();
         RCLCPP_INFO(get_logger(), "on_configure(): current end effector (x, y, z) = (%lf, %lf, %lf)",
@@ -107,6 +102,9 @@ public:
         RCLCPP_INFO(get_logger(), "on_shutdown(): %s", current_lifecycle_state_.c_str());
         return CallbackReturn::SUCCESS;
     }
+    rclcpp::Node::SharedPtr get_moveit_node() const { 
+        return moveit_node_; 
+    }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
     void leg1NamedCallback(const example_interfaces::msg::String::SharedPtr msg) {
@@ -139,14 +137,15 @@ private:
         //leg1_interface_->setStartState(*leg1_interface_->getCurrentState()); // faster, but risk stalling
     }
 
+    rclcpp::Node::SharedPtr moveit_node_;
     std::shared_ptr<MoveGroupInterface> leg1_interface_;
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     rclcpp::Subscription<example_interfaces::msg::String>::SharedPtr leg1_named_subscriber_;
 
     std::atomic<bool> success_{false};
-    std::string current_lifecycle_state_    = "state_uninitialized";
-    std::string planning_group_   = "leg1";
-    std::string endEffector_link_ = "calfSphere";
+    std::string current_lifecycle_state_ = "state_uninitialized";
+    std::string planning_group_          = "leg1";
+    std::string endEffector_link_        = "calfSphere";
     moveit::core::RobotStatePtr     current_robot_state_;
     geometry_msgs::msg::PoseStamped endEffector_pose_;
     double endEffector_x_ = 0;
@@ -160,9 +159,12 @@ int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
     rclcpp::NodeOptions node_options;
     node_options.automatically_declare_parameters_from_overrides(true);
-    auto node = std::make_shared<MyRobotLifecycleManager>(node_options);
+
+    auto lifecycle_manager_node = std::make_shared<MyRobotLifecycleManager>(node_options);
     rclcpp::executors::MultiThreadedExecutor executor;
-    executor.add_node(node->get_node_base_interface());
+    executor.add_node(lifecycle_manager_node->get_node_base_interface());
+    executor.add_node(lifecycle_manager_node->get_moveit_node());
+
     executor.spin();
     rclcpp::shutdown();
     return 0;
