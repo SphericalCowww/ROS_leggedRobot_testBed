@@ -164,8 +164,19 @@ int main(int argc, char **argv) {
     rclcpp::executors::MultiThreadedExecutor executor;
     executor.add_node(lifecycle_manager_node->get_node_base_interface());
     executor.add_node(lifecycle_manager_node->get_moveit_node());
+    
+    std::thread executor_thread([&executor]() { executor.spin(); });
+    using lifecycle_msgs::msg::Transition;
+    using lifecycle_msgs::msg::State;
+    lifecycle_manager_node->trigger_transition(rclcpp_lifecycle::Transition(Transition::TRANSITION_CONFIGURE));
+    while (lifecycle_manager_node->get_current_state().id() != State::PRIMARY_STATE_INACTIVE && rclcpp::ok()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    lifecycle_manager_node->trigger_transition(rclcpp_lifecycle::Transition(Transition::TRANSITION_ACTIVATE));
+    executor_thread.join();     //join command needs to wait for something
 
-    executor.spin();
+    //executor.spin();
+
     rclcpp::shutdown();
     return 0;
 }
