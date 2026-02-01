@@ -43,13 +43,13 @@ public:
     : rclcpp_lifecycle::LifecycleNode("my_robot_lifecycle", options) {
         RCLCPP_INFO(get_logger(), "constructor(): %s", current_lifecycle_state_.c_str());
 
-        moveit_node_ = std::make_shared<rclcpp::Node>("moveit_interface_node", this->get_namespace(), options);
         callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-        leg1_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_);
-        if (!leg1_interface_->startStateMonitor(2.0)) {
-            RCLCPP_ERROR(get_logger(), "constructor(): failed to start state monitor");
-        }
+        moveit_node_ = std::make_shared<rclcpp::Node>("moveit_interface_node", this->get_namespace(), options);
         exec_action_client_ = rclcpp_action::create_client<ExecuteTrajectory>(moveit_node_, "/execute_trajectory");
+        leg1_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_);
+        while (rclcpp::ok() && !leg1_interface_->startStateMonitor(1.0)) {
+            RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state...");
+        } 
  
         current_lifecycle_state_ = "state_initialized";
         RCLCPP_INFO(get_logger(), "constructor(): %s", current_lifecycle_state_.c_str());
@@ -58,8 +58,14 @@ public:
         RCLCPP_INFO(get_logger(), "on_configure(): %s", current_lifecycle_state_.c_str());
 
         leg1_interface_->setEndEffectorLink(endEffector_link_);
-        leg1_interface_->setPlanningTime(5.0);
-       
+        leg1_interface_->setMaxVelocityScalingFactor(1.0);
+        leg1_interface_->setMaxAccelerationScalingFactor(1.0);
+        leg1_interface_->setGoalPositionTolerance(0.01);
+        leg1_interface_->setGoalOrientationTolerance(0.1);
+        leg1_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
+        leg1_interface_->setNumPlanningAttempts(10);
+        leg1_interface_->setPlanningTime(60.0);
+ 
         state_service_ = this->create_service<std_srvs::srv::Trigger>(
             "get_robot_state",
             std::bind(&MyRobotLifecycleManager::handleGetState_, this, _1, _2)); 
@@ -83,11 +89,11 @@ public:
         auto sub_options = rclcpp::SubscriptionOptions();
         sub_options.callback_group = callback_group_;
         leg1_named_subscriber_ = create_subscription<ros_string>  ("/leg1_set_named", 10,
-            std::bind(&MyRobotLifecycleManager::leg1NamedCallback, this, _1), sub_options);
+            std::bind(&MyRobotLifecycleManager::leg1NamedCallback_, this, _1), sub_options);
         leg1_joint_subscriber_ = create_subscription<ros_array>   ("/leg1_set_joint", 10,
-            std::bind(&MyRobotLifecycleManager::leg1JointCallback, this, _1), sub_options);
+            std::bind(&MyRobotLifecycleManager::leg1JointCallback_, this, _1), sub_options);
         leg1_pose_subscriber_  = create_subscription<custom_array>("/leg1_set_pose",  10,
-            std::bind(&MyRobotLifecycleManager::leg1PoseCallback,  this, _1), sub_options);
+            std::bind(&MyRobotLifecycleManager::leg1PoseCallback_,  this, _1), sub_options);
 
         keep_running_thread_ = true;
         is_walking_          = false; 
@@ -150,25 +156,25 @@ private:
                            +std::to_string(endEffector_y_) + ", "
                            +std::to_string(endEffector_z_) + ")";
     }
-    void leg1NamedCallback(const example_interfaces::msg::String::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1NamedCallback(): command received");
+    void leg1NamedCallback_(const example_interfaces::msg::String::SharedPtr msg) {
+        RCLCPP_INFO(get_logger(), "leg1NamedCallback_(): command received");
 
         leg1_interface_->setNamedTarget(msg->data);
         planAndExecute_();
     }
-    void leg1JointCallback(const ros_array::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1JointCallback(): command received");
+    void leg1JointCallback_(const ros_array::SharedPtr msg) {
+        RCLCPP_INFO(get_logger(), "leg1JointCallback_(): command received");
         auto numberOfJoints = leg1_interface_->getJointNames().size();
         if (msg->data.size() != numberOfJoints) {
-            RCLCPP_WARN(get_logger(), "leg1JointCallback(): message empty");
+            RCLCPP_WARN(get_logger(), "leg1JointCallback_(): message empty");
             return;
         }
         
         leg1_interface_->setJointValueTarget(msg->data);
         planAndExecute_();
     }
-    void leg1PoseCallback(const custom_array::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1PoseCallback(): command received");
+    void leg1PoseCallback_(const custom_array::SharedPtr msg) {
+        RCLCPP_INFO(get_logger(), "leg1PoseCallback_(): command received");
 
         geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
         target_pose.position.x = msg->x;
@@ -177,7 +183,7 @@ private:
         if (msg->use_cartesian_path == false) {
             success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
             if (success_ == false) {
-                RCLCPP_ERROR(get_logger(), "leg1PoseCallback(): failed to find IK solution for target!");
+                RCLCPP_ERROR(get_logger(), "leg1PoseCallback_(): failed to find IK solution for target!");
             }
             planAndExecute_();
         } else {
@@ -191,7 +197,7 @@ private:
             if (cartesianConstraintFractionThreshold_ <= fraction) {
                 leg1_interface_->execute(trajectory);
             } else {
-                 RCLCPP_INFO(get_logger(), "leg1PoseCallback(): Cartesian computation fraction of "
+                 RCLCPP_INFO(get_logger(), "leg1PoseCallback_(): Cartesian computation fraction of "
                                                   "%lf, lower than the threshold of %lf", 
                                                   fraction, cartesianConstraintFractionThreshold_);
             }
@@ -202,8 +208,8 @@ private:
                                    std::pow(endEffector_y_ - msg->y, 2) +
                                    std::pow(endEffector_z_ - msg->z, 2));
         if (to_target_dist > to_target_dist_thres) {
-            RCLCPP_WARN(get_logger(), "leg1PoseCallback(): target unreachable (likely hit a joint limit)."
-                                             "Settled %f meters away.", to_target_dist);
+            RCLCPP_WARN(get_logger(), "leg1PoseCallback_(): target unreachable (likely hit a joint limit)."
+                                      "Settled %f meters away.", to_target_dist);
         }
         RCLCPP_INFO(get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                     endEffector_x_, endEffector_y_, endEffector_z_);    
@@ -221,7 +227,7 @@ private:
                 continue;
             }
             loadCurrentRobotState_();
-            RCLCPP_INFO(get_logger(), "walkingLoop(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+            RCLCPP_INFO(get_logger(), "walkingLoop_(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                         endEffector_x_, endEffector_y_, endEffector_z_);
 
             double x0 = -0.09;
@@ -250,7 +256,7 @@ private:
                       &state_1.setFromIK(joint_model_group, pose_1)
                       &state_2.setFromIK(joint_model_group, pose_2);
             if (success_ == false) {
-                RCLCPP_ERROR(get_logger(), "leg1SetWalkTarget(): IK failed");
+                RCLCPP_ERROR(get_logger(), "walkingLoop_(): IK failed");
                 continue; 
             }
 
@@ -264,7 +270,7 @@ private:
             trajectory_processing::TimeOptimalTrajectoryGeneration traj_gen;
             success_ = traj_gen.computeTimeStamps(*traj, 1.0, 0.8); // frac of vel, accel from joint_limits.yaml
             if (success_ == false) {
-                RCLCPP_ERROR(get_logger(), "leg1SetWalkTarget(): traj timing generation failed");
+                RCLCPP_ERROR(get_logger(), "walkingLoop_(): traj timing generation failed");
                 continue;
             }
             moveit_msgs::msg::RobotTrajectory traj_msg;
