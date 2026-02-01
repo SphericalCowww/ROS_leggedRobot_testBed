@@ -4,20 +4,19 @@
 #include <string>
 #include <cmath>
 
-#include "std_srvs/srv/set_bool.hpp"
-#include "moveit_msgs/action/execute_trajectory.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+
 #include "moveit/move_group_interface/move_group_interface.hpp"
 #include <moveit/robot_state/robot_state.hpp>
 #include <moveit/robot_model/robot_model.hpp>
 #include <moveit/robot_trajectory/robot_trajectory.hpp>
 #include <moveit/trajectory_processing/time_optimal_trajectory_generation.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
-
+#include <moveit_msgs/action/execute_trajectory.hpp>
+ 
 using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
@@ -26,6 +25,8 @@ using namespace std::placeholders;                  // for using _1, _2
  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //https://github.com/ros2/example_interfaces/tree/rolling/msg
+#include "std_srvs/srv/set_bool.hpp"
+#include "std_srvs/srv/trigger.hpp"
 #include <example_interfaces/msg/string.hpp>
 #include <example_interfaces/msg/float64_multi_array.hpp>    //variable size
 #include "my_robot_interface/msg/my_robot_leg1_pose_target.hpp"
@@ -58,7 +59,10 @@ public:
 
         leg1_interface_->setEndEffectorLink(endEffector_link_);
         leg1_interface_->setPlanningTime(5.0);
-        
+       
+        state_service_ = this->create_service<std_srvs::srv::Trigger>(
+            "get_robot_state",
+            std::bind(&MyRobotLifecycleManager::handleGetState_, this, _1, _2)); 
         walk_service_ = this->create_service<std_srvs::srv::SetBool>(
             "leg1_walk_toggle", 
             std::bind(&MyRobotLifecycleManager::handleWalkRequest_, this, _1, _2), 
@@ -137,36 +141,34 @@ public:
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
-    void leg1NamedCallback(const example_interfaces::msg::String::SharedPtr msg) {
+    void handleGetState_(const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
+                         std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
         loadCurrentRobotState_();
-        RCLCPP_INFO(get_logger(), "leg1NamedCallback(): current end effector (x, y, z) = (%lf, %lf, %lf)",
-                    endEffector_x_, endEffector_y_, endEffector_z_);
+        response->success = true;
+        response->message = "handleGetState_(): current end effector (x, y, z) = ("
+                           +std::to_string(endEffector_x_) + ", "
+                           +std::to_string(endEffector_y_) + ", "
+                           +std::to_string(endEffector_z_) + ")";
+    }
+    void leg1NamedCallback(const example_interfaces::msg::String::SharedPtr msg) {
+        RCLCPP_INFO(get_logger(), "leg1NamedCallback(): command received");
 
         leg1_interface_->setNamedTarget(msg->data);
         planAndExecute_();
     }
     void leg1JointCallback(const ros_array::SharedPtr msg) {
-        loadCurrentRobotState_();
-        RCLCPP_INFO(get_logger(), "leg1JointCallback(): current end effector (x, y, z) = (%lf, %lf, %lf)",
-                    endEffector_x_, endEffector_y_, endEffector_z_);        
+        RCLCPP_INFO(get_logger(), "leg1JointCallback(): command received");
         auto numberOfJoints = leg1_interface_->getJointNames().size();
         if (msg->data.size() != numberOfJoints) {
             RCLCPP_WARN(get_logger(), "leg1JointCallback(): message empty");
             return;
         }
-        else if (msg->layout.dim[0].size != numberOfJoints) {
-            RCLCPP_WARN(get_logger(), "leg1JointCallback(): incorrect input dimension, expect %li",
-                        numberOfJoints);
-            return;
-        }
-
+        
         leg1_interface_->setJointValueTarget(msg->data);
         planAndExecute_();
     }
     void leg1PoseCallback(const custom_array::SharedPtr msg) {
-        loadCurrentRobotState_();
-        RCLCPP_INFO(get_logger(), "leg1PoseCallback(): current end effector (x, y, z) = (%lf, %lf, %lf)",
-                    endEffector_x_, endEffector_y_, endEffector_z_);
+        RCLCPP_INFO(get_logger(), "leg1PoseCallback(): command received");
 
         geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
         target_pose.position.x = msg->x;
@@ -299,7 +301,7 @@ private:
         }
     }
     void loadCurrentRobotState_() {
-        current_robot_state_ = leg1_interface_->getCurrentState(0.5);     // wait up to 0.5 seconds 
+        current_robot_state_ = leg1_interface_->getCurrentState(0.5);       // wait up to 0.5 seconds 
         if (!current_robot_state_) {
             RCLCPP_ERROR(get_logger(), "loadCurrentRobotState_(): timeout to fetch current robot state");
         }
@@ -313,11 +315,6 @@ private:
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     rclcpp::Node::SharedPtr moveit_node_;
     std::shared_ptr<MoveGroupInterface> leg1_interface_;
-    rclcpp::CallbackGroup::SharedPtr callback_group_;
-    rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;
-    rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
-    rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
-
     std::atomic<bool> success_{false};
     std::string current_lifecycle_state_ = "state_uninitialized";
     std::string planning_group_          = "leg1";
@@ -328,15 +325,20 @@ private:
     double endEffector_y_ = 0;
     double endEffector_z_ = 0;
 
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
+    rclcpp::Subscription<ros_string>  ::SharedPtr leg1_named_subscriber_;
+    rclcpp::Subscription<ros_array>   ::SharedPtr leg1_joint_subscriber_;
+    rclcpp::Subscription<custom_array>::SharedPtr leg1_pose_subscriber_;
     double cartesianConstraintStepsize_          = 0.001;     // meter
     double cartesianConstraintFractionThreshold_ = 1.0;
     double to_target_dist       = 0;
     double to_target_dist_thres = 0.01;
 
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr state_service_;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr walk_service_; 
     std::atomic<bool> is_walking_{false};
     std::atomic<bool> keep_running_thread_{false};
     std::thread walking_thread_;
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr walk_service_;
     rclcpp_action::Client<ExecuteTrajectory>::SharedPtr exec_action_client_;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
