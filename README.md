@@ -405,7 +405,7 @@ Planned hardware spec (<a href="https://docs.isaacsim.omniverse.nvidia.com/5.1.0
 
 ### Installation
 
-Following the <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/install_workstation.html">installation reference</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links</a>.
+To install Isaac Sim, follow <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/install_workstation.html">installation guide</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links</a>:
 
     sudo apt update
     sudo apt install software-properties-common -y
@@ -432,29 +432,62 @@ Following the <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installa
     sudo apt install nvtop
     nvtop                        # for monitoring GPU
 
-To load the assets locally:
-
-    #download Complete 3 Part 140GB: https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html
-    #7z x isaac-sim-assets-complete-5.1.0.zip.001
-    cd .local/share/ov/data/Kit/Isaac-Sim\ Full/5.1
-    vim apps/isaacsim.exp.base.kit
+To load the assets locally, follow <a href="https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_faq.html">"Assets" guide</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links (3 parts)</a>:
+    mkdir .../Kit/assets
+    cd .../Kit/assets
+    7z x isaac-sim-assets-complete-5.1.0.zip.001
+    vim .../isaacsim/apps/isaacsim.exp.base.kit
     # following: https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_faq.html
     # find: 
     ## [settings]
     # add below:
-    ## persistent.isaac.asset_root.default = "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1"
+    ## persistent.isaac.asset_root.default = ".../Kit/assets/Isaac/5.1"
     ## exts."isaacsim.gui.content_browser".folders = [
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Robots",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/People",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/IsaacLab",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Props",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Environments",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Materials",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Samples",
-    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Sensors",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Robots",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/People",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/IsaacLab",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Props",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Environments",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Materials",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Samples",
+    ##     ".../Kit/assets/Isaac/5.1/Isaac/Sensors",
     ## ]
     # open Issac Sim
     # load the assets directly from "Content" on the bottom left
+
+To install Isaac Lab, follow <a href="https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html">installation guide</a>:
+
+    mkdir miniconda3
+    cd miniconda3/
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -u -p .
+    ./bin/conda init bash
+    source /home/cubicdoggo/.bashrc
+
+    conda create -n isaaclab_env python=3.11
+    # update .bashrc
+    # close terminal and restart
+    conda activate isaaclab_env
+    pip install --upgrade pip
+    pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com
+    pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+    git clone https://github.com/isaac-sim/IsaacLab.git
+    sudo apt install cmake build-essential
+    mv IsaacLab/ isaaclab
+    cd isaaclab
+    mkdir -p /home/cubicdoggo/Documents/miniconda3/envs/isaaclab_env/lib/python3.11/site-packages/isaacsim/.vscode
+    ln -sf /home/cubicdoggo/Documents/isaacsim/.vscode/settings.json /home/cubicdoggo/Documents/miniconda3/envs/isaaclab_env/lib/python3.11/site-packages/isaacsim/.vscode/settings.json
+    ./isaaclab.sh --install 
+
+And to check for the installation (may need to wait a bit):
+
+    python scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Velocity-Rough-Anymal-C-v0 --num_envs=1000
+    python scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Velocity-Rough-Anymal-C-v0 --headless
+    # check "Mean reward", wait 30 min
+    python scripts/reinforcement_learning/rsl_rl/play.py --task=Isaac-Velocity-Rough-Anymal-C-v0
+    # to find the saved trained files:
+    cd /home/cubicdoggo/Documents/isaaclab/logs/rsl_rl/anymal_c_rough
+    # choose a date, and exported/ should contain the corresponding policies
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
