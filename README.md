@@ -483,7 +483,7 @@ And to check for the installation (may need to wait a bit):
 
     python scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Velocity-Rough-Anymal-C-v0 --num_envs=1000
     python scripts/reinforcement_learning/rsl_rl/train.py --task=Isaac-Velocity-Rough-Anymal-C-v0 --headless
-    # check "Mean reward", wait 30 min
+    # check "Mean reward", wait 1 hr
     python scripts/reinforcement_learning/rsl_rl/play.py --task=Isaac-Velocity-Rough-Anymal-C-v0
     # to find the saved trained files:
     cd /home/cubicdoggo/Documents/isaaclab/logs/rsl_rl/anymal_c_rough
