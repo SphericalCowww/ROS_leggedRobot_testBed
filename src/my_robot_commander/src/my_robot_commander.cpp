@@ -254,21 +254,21 @@ class my_robot_commander_class
                 traj1.blend_radius    = 0.001;
                 traj1.req.planner_id  = "LIN"; 
                 traj_wrap_(traj1);
-                traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_land));
+                traj1.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_land));
                 sequence_request.items.push_back(traj1);
 
                 moveit_msgs::msg::MotionSequenceItem traj2;
                 traj2.blend_radius   = 0.001;
                 traj2.req.planner_id = "PTP";
                 traj_wrap_(traj2);
-                traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_top));
+                traj2.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_top));
                 sequence_request.items.push_back(traj2);
 
                 moveit_msgs::msg::MotionSequenceItem traj3;
                 traj3.blend_radius   = 0.0;                       //last one must be 0
                 traj3.req.planner_id = "PTP";
                 traj_wrap_(traj3);
-                traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_start));
+                traj3.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_start));
                 sequence_request.items.push_back(traj3);
 
                 while (rclcpp::ok() && is_walking_) {
@@ -334,15 +334,15 @@ class my_robot_commander_class
                 traj1.blend_radius    = 0.02;
                 traj1.req.planner_id  = "LIN"; 
                 traj_wrap_(traj1);
-                traj1.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_1));
+                traj1.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_1));
                 traj2.blend_radius   = 0.02;
                 traj2.req.planner_id = "PTP";
                 traj_wrap_(traj2);
-                traj2.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_2));
+                traj2.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_2));
                 traj3.blend_radius   = 0.0;                       //last one must be 0
                 traj3.req.planner_id = "PTP";
                 traj_wrap_(traj3);
-                traj3.req.goal_constraints.push_back(create_pose_constraints(endEffector_link_, pose_0));
+                traj3.req.goal_constraints.push_back(create_pose_constraints_(endEffector_link_, pose_0));
                 sequence_request.items.push_back(traj1);
                 sequence_request.items.push_back(traj2);
                 sequence_request.items.push_back(traj3);
@@ -564,8 +564,8 @@ class my_robot_commander_class
             traj.req.workspace_parameters.max_corner.y    = 1.0;
             traj.req.workspace_parameters.max_corner.z    = 1.0;
         }
-        moveit_msgs::msg::Constraints create_pose_constraints(const std::string& link_name, 
-                                                              const geometry_msgs::msg::Pose& pose) {
+        moveit_msgs::msg::Constraints create_pose_constraints_(const std::string& link_name, 
+                                                               const geometry_msgs::msg::Pose& pose) {
             geometry_msgs::msg::PoseStamped stamped_pose;
             stamped_pose.header.frame_id = leg1_interface_->getPlanningFrame();
             stamped_pose.pose = pose;
