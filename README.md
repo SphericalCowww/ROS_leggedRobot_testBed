@@ -385,7 +385,11 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
     ros2 launch my_robot_bringup my_robot.with_lifecycle.launch.py
     ros2 lifecycle set /my_robot_lifecycle configure
     ros2 lifecycle set /my_robot_lifecycle activate
+    ros2 service call /get_robot_state std_srvs/srv/Trigger {}            # to get the current position
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
+    ros2 topic pub -1 /leg1_set_joint example_interfaces/msg/Float64MultiArray "{data: [3.14, 3.14, 3.14]}"
+    ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
+    ros2 service call /leg1_walk_toggle std_srvs/srv/SetBool "{data: true}"
 
 ## Training with Isaac Sim
 
