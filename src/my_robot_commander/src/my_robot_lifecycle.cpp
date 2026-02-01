@@ -21,6 +21,7 @@
 using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
+using ExecuteTrajectory  = moveit_msgs::action::ExecuteTrajectory;
 using namespace std::placeholders;                  // for using _1, _2
  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,9 +59,11 @@ public:
         leg1_interface_->setEndEffectorLink(endEffector_link_);
         leg1_interface_->setPlanningTime(5.0);
         
-        walk_service_ = this->create_service<std_srvs::srv::SetBool>("leg1_walk_toggle", 
-            std::bind(&MyRobotLifecycleManager::handleWalkRequest_, this, _1, _2),
-            rmw_qos_profile_services_default, callback_group_);
+        walk_service_ = this->create_service<std_srvs::srv::SetBool>(
+            "leg1_walk_toggle", 
+            std::bind(&MyRobotLifecycleManager::handleWalkRequest_, this, _1, _2), 
+            rclcpp::ServicesQoS(), 
+            callback_group_);
 
         loadCurrentRobotState_();
         RCLCPP_INFO(get_logger(), "on_configure(): current end effector (x, y, z) = (%lf, %lf, %lf)",
@@ -174,7 +177,7 @@ private:
             if (success_ == false) {
                 RCLCPP_ERROR(get_logger(), "leg1PoseCallback(): failed to find IK solution for target!");
             }
-            planAndExecute_(leg1_interface_);
+            planAndExecute_();
         } else {
             moveit_msgs::msg::RobotTrajectory trajectory;
             std::vector<geometry_msgs::msg::Pose> waypoints;
@@ -241,11 +244,11 @@ private:
             moveit::core::RobotState state_1(*current_robot_state_);
             moveit::core::RobotState state_2(*current_robot_state_);
 
-            success_  = state_0.setFromIK(joint_model_group, pose0) 
-            success_ &= state_1.setFromIK(joint_model_group, pose1) 
-            success_ &= state_2.setFromIK(joint_model_group, pose2) 
+            success_ = state_0.setFromIK(joint_model_group, pose_0) 
+                      &state_1.setFromIK(joint_model_group, pose_1)
+                      &state_2.setFromIK(joint_model_group, pose_2);
             if (success_ == false) {
-                RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): IK failed");
+                RCLCPP_ERROR(get_logger(), "leg1SetWalkTarget(): IK failed");
                 continue; 
             }
 
@@ -259,7 +262,7 @@ private:
             trajectory_processing::TimeOptimalTrajectoryGeneration traj_gen;
             success_ = traj_gen.computeTimeStamps(*traj, 1.0, 0.8); // frac of vel, accel from joint_limits.yaml
             if (success_ == false) {
-                RCLCPP_ERROR(node_->get_logger(), "leg1SetWalkTarget(): traj timing generation failed");
+                RCLCPP_ERROR(get_logger(), "leg1SetWalkTarget(): traj timing generation failed");
                 continue;
             }
             moveit_msgs::msg::RobotTrajectory traj_msg;
@@ -325,6 +328,8 @@ private:
     double endEffector_y_ = 0;
     double endEffector_z_ = 0;
 
+    double cartesianConstraintStepsize_          = 0.001;     // meter
+    double cartesianConstraintFractionThreshold_ = 1.0;
     double to_target_dist       = 0;
     double to_target_dist_thres = 0.01;
 
