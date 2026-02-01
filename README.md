@@ -380,6 +380,13 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
 
 [Video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait2_1Leg.mp4)
 
+#### launch with hardware, commander as a lifecycle
+
+    ros2 launch my_robot_bringup my_robot.with_lifecycle.launch.py
+    ros2 lifecycle set /my_robot_lifecycle configure
+    ros2 lifecycle set /my_robot_lifecycle activate
+    ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
+
 ## Training with Isaac Sim
 
 ### Hardware
@@ -424,6 +431,30 @@ Following the <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installa
     # check also APP "NVIDIA X Server Settings" to adjust GPU settings
     sudo apt install nvtop
     nvtop                        # for monitoring GPU
+
+To load the assets locally:
+
+    #download Complete 3 Part 140GB: https://docs.isaacsim.omniverse.nvidia.com/5.0.0/installation/download.html
+    #7z x isaac-sim-assets-complete-5.1.0.zip.001
+    cd .local/share/ov/data/Kit/Isaac-Sim\ Full/5.1
+    vim apps/isaacsim.exp.base.kit
+    # following: https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_faq.html
+    # find: 
+    ## [settings]
+    # add below:
+    ## persistent.isaac.asset_root.default = "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1"
+    ## exts."isaacsim.gui.content_browser".folders = [
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Robots",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/People",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/IsaacLab",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Props",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Environments",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Materials",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Samples",
+    ##     "//home/cubicdoggo/Documents/Kit/assets/Isaac/5.1/Isaac/Sensors",
+    ## ]
+    # open Issac Sim
+    # load the assets directly from "Content" on the bottom left
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
