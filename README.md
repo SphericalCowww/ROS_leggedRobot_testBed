@@ -437,6 +437,7 @@ To install Isaac Sim, follow <a href="https://docs.isaacsim.omniverse.nvidia.com
     nvtop                        # for monitoring GPU
 
 To load the assets locally, follow <a href="https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_faq.html">"Assets" guide</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links (3 parts)</a>:
+
     mkdir .../Kit/assets
     cd .../Kit/assets
     7z x isaac-sim-assets-complete-5.1.0.zip.001
