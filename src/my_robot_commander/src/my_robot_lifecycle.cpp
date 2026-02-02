@@ -147,43 +147,41 @@ public:
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
-    void handleGetState_(const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
-                         std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
-        loadCurrentRobotState_();
-        response->success = true;
-        response->message = "handleGetState_(): current end effector (x, y, z) = ("
-                           +std::to_string(endEffector_x_) + ", "
-                           +std::to_string(endEffector_y_) + ", "
-                           +std::to_string(endEffector_z_) + ")";
-    }
-    void leg1NamedCallback_(const example_interfaces::msg::String::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1NamedCallback_(): command received");
-
-        leg1_interface_->setNamedTarget(msg->data);
-        planAndExecute_();
+    void leg1NamedCallback_(const ros_string::SharedPtr msg) {
+        RCLCPP_INFO(get_logger(), "leg1NamedCallback(): command received");
+        leg1NamedTarget_(msg->data);
     }
     void leg1JointCallback_(const ros_array::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1JointCallback_(): command received");
+        RCLCPP_INFO(get_logger(), "leg1JointCallback(): command received");
         auto numberOfJoints = leg1_interface_->getJointNames().size();
         if (msg->data.size() != numberOfJoints) {
-            RCLCPP_WARN(get_logger(), "leg1JointCallback_(): message empty");
+            RCLCPP_WARN(get_logger(), "leg1JointCallback(): message empty");
             return;
         }
-        
-        leg1_interface_->setJointValueTarget(msg->data);
-        planAndExecute_();
+        leg1JointTarget_(msg->data);
     }
     void leg1PoseCallback_(const custom_array::SharedPtr msg) {
-        RCLCPP_INFO(get_logger(), "leg1PoseCallback_(): command received");
-
+        RCLCPP_INFO(get_logger(), "leg1PoseCallback(): command received");
+        leg1PoseTarget_(msg->x, msg->y, msg->z, msg->use_cartesian_path);
+    }
+    ///////////
+    void leg1NamedTarget_(const std::string &name) {
+        leg1_interface_->setNamedTarget(name);
+        planAndExecute_();
+    }
+    void leg1JointTarget_(const std::vector<double> &joints) {
+        leg1_interface_->setJointValueTarget(joints);
+        planAndExecute_();
+    }
+    void leg1PoseTarget_(double x, double y, double z, bool use_cartesian_path=false) {
         geometry_msgs::msg::Pose target_pose = endEffector_pose_.pose;
-        target_pose.position.x = msg->x;
-        target_pose.position.y = msg->y;
-        target_pose.position.z = msg->z;
-        if (msg->use_cartesian_path == false) {
+        target_pose.position.x = x;
+        target_pose.position.y = y;
+        target_pose.position.z = z;
+        if (use_cartesian_path == false) {
             success_ = leg1_interface_->setApproximateJointValueTarget(target_pose, endEffector_link_);
             if (success_ == false) {
-                RCLCPP_ERROR(get_logger(), "leg1PoseCallback_(): failed to find IK solution for target!");
+                RCLCPP_ERROR(get_logger(), "leg1PoseTarget_(): failed to find IK solution for target!");
             }
             planAndExecute_();
         } else {
@@ -197,28 +195,124 @@ private:
             if (cartesianConstraintFractionThreshold_ <= fraction) {
                 leg1_interface_->execute(trajectory);
             } else {
-                 RCLCPP_INFO(get_logger(), "leg1PoseCallback_(): Cartesian computation fraction of "
+                 RCLCPP_INFO(get_logger(), "leg1PoseTarget_(): Cartesian computation fraction of "
                                                   "%lf, lower than the threshold of %lf", 
                                                   fraction, cartesianConstraintFractionThreshold_);
             }
         }
             
         loadCurrentRobotState_();
-        to_target_dist = std::sqrt(std::pow(endEffector_x_ - msg->x, 2) + 
-                                   std::pow(endEffector_y_ - msg->y, 2) +
-                                   std::pow(endEffector_z_ - msg->z, 2));
+        to_target_dist = std::sqrt(std::pow(endEffector_x_ - x, 2) + 
+                                   std::pow(endEffector_y_ - y, 2) +
+                                   std::pow(endEffector_z_ - z, 2));
         if (to_target_dist > to_target_dist_thres) {
-            RCLCPP_WARN(get_logger(), "leg1PoseCallback_(): target unreachable (likely hit a joint limit)."
+            RCLCPP_WARN(get_logger(), "leg1PoseTarget_(): target unreachable (likely hit a joint limit)."
                                       "Settled %f meters away.", to_target_dist);
         }
-        RCLCPP_INFO(get_logger(), "leg1SetPoseTarget(): current end effector (x, y, z) = (%lf, %lf, %lf)",
+        RCLCPP_INFO(get_logger(), "leg1SetPoseTarget_(): current end effector (x, y, z) = (%lf, %lf, %lf)",
                     endEffector_x_, endEffector_y_, endEffector_z_);    
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void handleGetState_(const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
+                         std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+        loadCurrentRobotState_();
+        response->success = true;
+        response->message = "handleGetState_(): current end effector (x, y, z) = ("
+                           +std::to_string(endEffector_x_) + ", "
+                           +std::to_string(endEffector_y_) + ", "
+                           +std::to_string(endEffector_z_) + ")";
     }
     void handleWalkRequest_(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                             std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
         is_walking_ = request->data;
         response->success = true;
         response->message = is_walking_ ? "Walking started" : "Walking stopped";
+    }
+    void walkingLoop__() {
+        double x0 = -0.09;
+        double y0 =  0.01;
+        double z0 =  0.13;
+        double traj_arc_rad = 0.04;
+
+        geometry_msgs::msg::Pose pose_0 = endEffector_pose_.pose;
+        pose_0.position.x = x0;
+        pose_0.position.y = y0;
+        pose_0.position.z = z0;
+
+        geometry_msgs::msg::Pose pose_1 = pose_0;
+        pose_1.position.y = y0 + 2*traj_arc_rad;
+
+        geometry_msgs::msg::Pose pose_2 = pose_0;
+        pose_2.position.y = y0 + traj_arc_rad;
+        pose_2.position.z = z0 - traj_arc_rad;
+
+        loadCurrentRobotState_();
+        auto joint_model_group = current_robot_state_->getJointModelGroup(planning_group_);
+        moveit::core::RobotState state_0(*current_robot_state_);
+        moveit::core::RobotState state_1(*current_robot_state_);
+        moveit::core::RobotState state_2(*current_robot_state_);
+        success_ = state_0.setFromIK(joint_model_group, pose_0)
+                  &state_1.setFromIK(joint_model_group, pose_1)
+                  &state_2.setFromIK(joint_model_group, pose_2);
+        if (success_ == false) {
+            RCLCPP_ERROR(get_logger(), "walkingLoop_(): IK failed");
+            return;
+        }
+
+        auto traj = std::make_shared<robot_trajectory::RobotTrajectory>(leg1_interface_->getRobotModel(), 
+                                                                        planning_group_);
+        traj->addSuffixWayPoint(state_0, 0.0);
+        traj->addSuffixWayPoint(state_1, 0.0);
+        traj->addSuffixWayPoint(state_2, 0.0);
+        //traj->addSuffixWayPoint(state_0, 0.0);
+
+        trajectory_processing::TimeOptimalTrajectoryGeneration traj_gen;
+        success_ = traj_gen.computeTimeStamps(*traj, 1.0, 0.8); // frac of vel, accel from joint_limits.yaml
+        if (success_ == false) {
+            RCLCPP_ERROR(get_logger(), "walkingLoop_(): traj timing generation failed");
+            return;
+        }
+        moveit_msgs::msg::RobotTrajectory traj_msg;
+        traj->getRobotTrajectoryMsg(traj_msg);
+                
+        std::vector<double> current_positions;
+        //loadCurrentRobotState_();
+        while (rclcpp::ok() && is_walking_) {
+            auto exec_goal = moveit_msgs::action::ExecuteTrajectory::Goal();
+            exec_goal.trajectory = traj_msg;
+
+            loadCurrentRobotState_(); 
+            current_robot_state_->copyJointGroupPositions(joint_model_group, current_positions);
+            if(!exec_goal.trajectory.joint_trajectory.points.empty()) {
+                exec_goal.trajectory.joint_trajectory.points[0].positions = current_positions;
+            }
+
+            auto exec_goal_future = exec_action_client_->async_send_goal(exec_goal);
+            if (exec_goal_future.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
+                RCLCPP_ERROR(get_logger(), "walkingLoop_(): timeout waiting for goal response");
+                break;
+            }
+            auto exec_goal_handle = exec_goal_future.get(); 
+            if (exec_goal_handle) {
+                auto exec_result_future = exec_action_client_->async_get_result(exec_goal_handle);
+                bool step_finished = false;
+                while (rclcpp::ok() && is_walking_ && !step_finished) {
+                    auto exec_result_status = exec_result_future.wait_for(std::chrono::milliseconds(10));
+                    if (exec_result_status == std::future_status::ready) {
+                        step_finished = true;
+                        RCLCPP_INFO(get_logger(), "walkingLoop_(): step completed");
+                    }
+                }
+                if (!is_walking_ && !step_finished) {
+                    RCLCPP_WARN(get_logger(), "walkingLoop_(): interrupt received; canceling trajectory.");
+                    exec_action_client_->async_cancel_goal(exec_goal_handle);
+                    break; 
+                }
+            } else {
+                RCLCPP_ERROR(get_logger(), "walkingLoop_(): goal rejected by server");
+                break;
+            }
+        }
     }
     void walkingLoop_() {
         while (keep_running_thread_ && rclcpp::ok()) {
@@ -278,6 +372,15 @@ private:
 
             auto exec_goal = ExecuteTrajectory::Goal();
             exec_goal.trajectory = traj_msg;
+
+            std::vector<double> current_positions;
+            leg1PoseTarget_(x0, y0, z0);
+            loadCurrentRobotState_();
+            current_robot_state_->copyJointGroupPositions(joint_model_group, current_positions);
+            if(!exec_goal.trajectory.joint_trajectory.points.empty()) {
+                exec_goal.trajectory.joint_trajectory.points[0].positions = current_positions;
+            }
+
             auto send_goal_options = rclcpp_action::Client<ExecuteTrajectory>::SendGoalOptions();
             auto goal_handle_future = exec_action_client_->async_send_goal(exec_goal, send_goal_options);
             if (goal_handle_future.wait_for(std::chrono::seconds(2)) == std::future_status::ready) {
