@@ -432,9 +432,12 @@ To install Isaac Sim, follow <a href="https://docs.isaacsim.omniverse.nvidia.com
     ./post_install.sh
     ./isaac-sim.sh # after the initial opening, an APP "Isaac Sim" actually appears
 
-    # check also APP "NVIDIA X Server Settings" to adjust GPU settings
     sudo apt install nvtop
     nvtop                        # for monitoring GPU
+    sudo apt install psensor
+    # check psensor App, for monitoring temperatures 
+    # check also APP "NVIDIA X Server Settings" to adjust GPU settings
+
 
 To load the assets locally, follow <a href="https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_faq.html">"Assets" guide</a> and get zip file from <a href="https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html">download links (3 parts)</a>:
 
