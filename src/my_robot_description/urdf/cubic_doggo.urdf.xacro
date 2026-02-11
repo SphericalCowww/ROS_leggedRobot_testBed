@@ -26,9 +26,9 @@
         <child link="base_link"/>
     </joint>    
 <!-- ================================================================================================================================== -->
-    <xacro:doggo_leg prefix="FR" origin_xyz="0.026 0.048 0"/>
-    <xacro:doggo_leg prefix="FL" origin_xyz="0.026 -0.048 0"/>
-    <xacro:doggo_leg prefix="RR" origin_xyz="-0.026 0.048 0"/>
-    <xacro:doggo_leg prefix="RL" origin_xyz="-0.026 -0.048 0"/>   
+    <xacro:doggo_leg prefix='FR'/>
+    <xacro:doggo_leg prefix='FL'/>
+    <xacro:doggo_leg prefix='BR'/>
+    <xacro:doggo_leg prefix='BL'/>   
 <!-- ================================================================================================================================== -->
 </robot>
