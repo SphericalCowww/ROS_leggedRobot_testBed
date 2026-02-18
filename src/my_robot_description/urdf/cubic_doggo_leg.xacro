@@ -9,7 +9,7 @@
     <xacro:if value="${prefix == 'FR'}">
         <xacro:property name="rflc"              value=" 1"/>
         <xacro:property name="base_plate"        value="base_plate_F"/>
-        <xacro:property name="servo1_holder_xyz" value=" 0.026  0.048 0"/>
+        <xacro:property name="servo1_holder_xyz" value="-0.052 0.018 0.004"/>
     </xacro:if>
     <xacro:if value="${prefix == 'FL'}">
         <xacro:property name="rflc"              value="-1"/>
@@ -38,7 +38,7 @@
         </visual>
         <collision>
             <geometry>
-                <box size="0.037 0.032 0.014"/>
+                <box size="0.037 0.037 0.014"/>
             </geometry>
             <origin xyz="0 0 0.007" rpy="0 0 ${rflc*urdf_pi/2}"/>
         </collision>
@@ -108,7 +108,7 @@
         </visual>
         <collision>
             <geometry>
-                <box size="0.037 0.032 0.014"/>
+                <box size="0.037 0.037 0.014"/>
             </geometry>
             <origin xyz="0 -0.007 0" rpy="${rflc*urdf_pi/2} 0 0"/>
         </collision>
@@ -201,7 +201,7 @@
         </visual>
         <collision>
             <geometry>
-                <box size="0.110 0.040 0.006"/>
+                <box size="0.080 0.040 0.006"/>
             </geometry>
             <origin xyz="${rflc*0.003} -0.055 0" rpy="${-rflc*urdf_pi/2} 0 ${-rflc*urdf_pi/2}"/>
         </collision>
@@ -243,13 +243,13 @@
                 <mesh filename="package://my_robot_description/mesh/CADv0.1/calfFeet.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <material name="purple"/>
-            <origin xyz="${-rflc*0.004} -0.008 0.035" rpy="0 ${urdf_pi/2} 0"/>
+            <origin xyz="${-rflc*0.004} -0.008 0.038" rpy="0 ${urdf_pi/2} 0"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.150 0.016 0.004"/>
+                <box size="0.110 0.016 0.004"/>
             </geometry>
-            <origin xyz="${-rflc*0.002} ${-0.008+0.008} ${0.035-0.080}" rpy="0 ${-urdf_pi/2} 0"/>
+            <origin xyz="0 ${-0.008+0.008} ${0.038-0.050}" rpy="0 ${-urdf_pi/2} 0"/>
         </collision>
         <xacro:box_inertia m="${0.0251-0.0080}" x="0.150" y="0.016" z="0.004" 
                            o_xyz="${rflc*(-servo_z/2-0.002-0.0025-0.002)} ${-0.008+0.008} ${0.035-0.080}" o_rpy="0 ${-urdf_pi/2} 0"/>
@@ -257,7 +257,7 @@
     <joint name="servo3_calfFeet_${prefix}" type="revolute">
         <parent link="servo3_${prefix}"/>
         <child  link="calfFeet_${prefix}"/>
-        <origin xyz="${rflc*(-servo_z/2-0.002-0.0025)} ${-0.101+0.004} 0" rpy="0 0 0"/>
+        <origin xyz="${rflc*(-servo_z/2-0.002-0.0025)} ${-0.086+0.004} 0" rpy="0 0 0"/>
         <axis xyz="${-rflc} 0 0"/>
         <limit effort="1000.0" velocity="20.0" lower="2.0" upper="4.0"/>
         <dynamics friction="0.05" damping="0.1"/>
@@ -273,9 +273,9 @@
         </visual>
         <collision>
             <geometry>
-                <box size="0.022 0.051 0.0065"/>
+                <box size="0.022 0.053 0.007"/>
             </geometry>
-            <origin xyz="${-rflc*0.0005} 0 0.0145" rpy="${rflc*urdf_pi/2} 0 ${-rflc*urdf_pi/2}"/>
+            <origin xyz="${-rflc*0.0005} 0 0.0155" rpy="${rflc*urdf_pi/2} 0 ${-rflc*urdf_pi/2}"/>
         </collision>
         <xacro:box_inertia m="${0.0047+0.0015}" x="0.022" y="0.051" z="0.0065" 
                            o_xyz="${-rflc*0.0005} 0 0.0145" o_rpy="${rflc*urdf_pi/2} 0 ${-rflc*urdf_pi/2}"/>
@@ -309,7 +309,7 @@
     <joint name="calfFeet_calfSphere_${prefix}" type="fixed">
         <parent link="calfFeet_${prefix}"/>
         <child  link="calfSphere_${prefix}"/>
-        <origin xyz="${-rflc*0.002} 0.004 ${-0.150+0.035}" rpy="0 0 0"/>
+        <origin xyz="0 0.004 ${-0.105+0.035}" rpy="0 0 0"/>
     </joint>
     </xacro:macro>
 </robot>

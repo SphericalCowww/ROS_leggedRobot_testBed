@@ -8,93 +8,72 @@
     <link name="base_link">
         <visual>
             <geometry>
-                <box size="0.052 0.096 0.06"/>
-            </geometry>
-            <origin xyz="0 0 -0.03" rpy="0 0 0"/>
-            <material name="grey"/>
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.052 0.096 0.06"/>
-            </geometry>
-            <origin xyz="0 0 -0.03" rpy="0 0 0"/>
-        </collision>
-        <xacro:lazy_inertia m="0.01"/>
-    </link>
-    <joint name="world_base_link" type="fixed">
-        <parent link="world"/>
-        <child link="base_link"/>
-    </joint>    
-
-    <link name="torso">
-        <visual>
-            <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/basePlateTorsoUpper-Body.stl" scale="0.001 0.001 0.001"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0.1/basePlateTorsoUpper-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <material name="grey"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.132 0.036 0.004"/>
+                <box size="0.056 0.252 0.004"/>
             </geometry>
-            <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
+            <origin xyz="0.0 0.0 0.002" rpy="0 0 0"/>
         </collision>
         <xacro:lazy_inertia m="0.0336"/>
     </link>
-    <joint name="base_link_torso" type="fixed">
-        <parent link="base_link"/>
-        <child  link="torso"/>
+    <joint name="world_base_link" type="fixed">
+        <parent link="world"/>
+        <child  link="base_link"/>
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
     <link name="base_plate_F">
         <visual>
             <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate.stl" scale="0.001 0.001 0.001"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0.1/basePlate-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <material name="grey"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.132 0.036 0.004"/>
+                <box size="0.141 0.036 0.004"/>
             </geometry>
             <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
         <xacro:lazy_inertia m="0.0336"/>
     </link>
     <joint name="torso_base_plate_F" type="fixed">
-        <parent link="torso"/>
+        <parent link="base_link"/>
         <child  link="base_plate_F"/>
-        <origin xyz="0 0.012 -0.004" rpy="0 0 0"/>
+        <origin xyz="0 0.09 0.004" rpy="0 0 0"/>
     </joint>
 
     <link name="base_plate_B">
         <visual>
             <geometry>
-                <mesh filename="package://my_robot_description/mesh/CADv0/basePlate.stl" scale="0.001 0.001 0.001"/>
+                <mesh filename="package://my_robot_description/mesh/CADv0.1/basePlate-Body.stl" scale="0.001 0.001 0.001"/>
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <material name="grey"/>
         </visual>
         <collision>
             <geometry>
-                <box size="0.132 0.036 0.004"/>
+                <box size="0.141 0.036 0.004"/>
             </geometry>
             <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
         <xacro:lazy_inertia m="0.0336"/>
     </link>
     <joint name="torso_base_plate_B" type="fixed">
-        <parent link="torso"/>
+        <parent link="base_link"/>
         <child  link="base_plate_B"/>
-        <origin xyz="0 -0.012 -0.004" rpy="0 0 0"/>
+        <origin xyz="0 -0.066 0.004" rpy="0 0 0"/>
     </joint>    
 <!-- ================================================================================================================================== -->
     <xacro:doggo_leg prefix='FR'/>
-    <xacro:doggo_leg prefix='FL'/>
+    <!--xacro:doggo_leg prefix='FL'/>
     <xacro:doggo_leg prefix='BR'/>
-    <xacro:doggo_leg prefix='BL'/>   
+    <xacro:doggo_leg prefix='BL'/-->   
 <!-- ================================================================================================================================== -->
 </robot>
