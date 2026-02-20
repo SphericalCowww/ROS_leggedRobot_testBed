@@ -71,9 +71,9 @@
         <origin xyz="0 -0.066 0.004" rpy="0 0 0"/>
     </joint>    
 <!-- ================================================================================================================================== -->
-    <xacro:doggo_leg prefix='FR'/>
     <xacro:doggo_leg prefix='FL'/>
-    <!--xacro:doggo_leg prefix='BR'/>
-    <xacro:doggo_leg prefix='BL'/-->   
+    <xacro:doggo_leg prefix='FR'/>
+    <xacro:doggo_leg prefix='BL'/>
+    <xacro:doggo_leg prefix='BR'/>   
 <!-- ================================================================================================================================== -->
 </robot>

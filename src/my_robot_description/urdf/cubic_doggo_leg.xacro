@@ -6,25 +6,25 @@
     <xacro:property name="servo_x" value="0.0285"/>
     <xacro:property name="servo_y" value="0.0465"/>
     <xacro:property name="servo_z" value="0.034"/>
-    <xacro:if value="${prefix == 'FR'}">
+    <xacro:if value="${prefix == 'FL'}">
         <xacro:property name="rflc"              value=" 1"/>
         <xacro:property name="base_plate"        value="base_plate_F"/>
         <xacro:property name="servo1_holder_xyz" value="-0.052 0.018 0.004"/>
     </xacro:if>
-    <xacro:if value="${prefix == 'FL'}">
+    <xacro:if value="${prefix == 'FR'}">
         <xacro:property name="rflc"              value="-1"/>
         <xacro:property name="base_plate"        value="base_plate_F"/>
         <xacro:property name="servo1_holder_xyz" value=" 0.052 0.018 0.004"/>
     </xacro:if>
-    <xacro:if value="${prefix == 'BR'}">
+    <xacro:if value="${prefix == 'BL'}">
         <xacro:property name="rflc"              value=" 1"/>
         <xacro:property name="base_plate"        value='base_plate_B'/>
-        <xacro:property name="servo1_holder_xyz" value=" 0.026 -0.048 0"/>
+        <xacro:property name="servo1_holder_xyz" value="-0.052 0.018 0"/>
     </xacro:if>
-    <xacro:if value="${prefix == 'BL'}">
+    <xacro:if value="${prefix == 'BR'}">
         <xacro:property name="rflc"              value="-1"/>
         <xacro:property name="base_plate"        value='base_plate_B'/>
-        <xacro:property name="servo1_holder_xyz" value="-0.026 -0.048 0"/>
+        <xacro:property name="servo1_holder_xyz" value=" 0.052 0.018 0"/>
     </xacro:if> 
 
     <!-- ============================================================================================================================== -->
