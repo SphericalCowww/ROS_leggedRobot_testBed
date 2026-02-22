@@ -51,7 +51,7 @@ install(TARGETS my_robot_hardware_interface
 add_library(cubic_doggo_hardware_interface SHARED
   src/hardware_interface_cubic_doggo_dynamixel_u2d2_xl430.cpp
 )
-ament_target_dependencies(cubic_doggo_hardware_interface rclcpp rclcpp_lifecycle dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox hardware_inter    face pluginlib)
+ament_target_dependencies(cubic_doggo_hardware_interface rclcpp rclcpp_lifecycle dynamixel_sdk dynamixel_workbench dynamixel_workbench_toolbox hardware_interface pluginlib)
 pluginlib_export_plugin_description_file(hardware_interface cubic_doggo_hardware_interface.xml)
 install(TARGETS cubic_doggo_hardware_interface
   DESTINATION lib/${PROJECT_NAME}

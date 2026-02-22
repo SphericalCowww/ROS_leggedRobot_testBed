@@ -23,7 +23,11 @@ ament_target_dependencies(my_robot_commander rclcpp moveit_ros_planning_interfac
 add_executable(my_robot_lifecycle src/my_robot_lifecycle.cpp)
 ament_target_dependencies(my_robot_lifecycle rclcpp moveit_ros_planning_interface moveit_core example_interfaces my_robot_interface)
  
-install(TARGETS ma_robot_commander my_robot_commander my_robot_lifecycle
+add_executable(cubic_doggo_lifecycle src/cubic_doggo_lifecycle.cpp)
+ament_target_dependencies(cubic_doggo_lifecycle rclcpp moveit_ros_planning_interface moveit_core example_interfaces my_robot_interface)
+
+
+install(TARGETS ma_robot_commander my_robot_commander my_robot_lifecycle cubic_doggo_lifecycle
   DESTINATION lib/${PROJECT_NAME}
 )
 
