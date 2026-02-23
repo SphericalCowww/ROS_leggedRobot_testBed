@@ -25,15 +25,42 @@ namespace cubic_doggo_namespace {
 
 
         /////////// see: src/my_robot_description/urdf/cubic_doggo.ros2_control.xacro
-        servo_channels_[0] = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel"));
-        servo_channels_[1] = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel"));
-        servo_channels_[2] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel"));
-        joint_names = {"servo1_servo1_padding", 
-                       "servo2_servo2_padding", 
-                       "servo3_calfFeet"};
-        rad_positions_init_[0] = DXL_PI;
-        rad_positions_init_[1] = DXL_PI;
-        rad_positions_init_[2] = DXL_PI;
+        servo_channels_[0]  = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel_FL"));
+        servo_channels_[1]  = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel_FL"));
+        servo_channels_[2]  = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel_FL"));
+        servo_channels_[3]  = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel_FR"));
+        servo_channels_[4]  = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel_FR"));
+        servo_channels_[5]  = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel_FR"));
+        servo_channels_[6]  = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel_BL"));
+        servo_channels_[7]  = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel_BL"));
+        servo_channels_[8]  = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel_BL"));
+        servo_channels_[9]  = std::stoi(params.hardware_info.hardware_parameters.at("servo1_channel_BR"));
+        servo_channels_[10] = std::stoi(params.hardware_info.hardware_parameters.at("servo2_channel_BR"));
+        servo_channels_[11] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel_BR"));
+        joint_names = {"servo1_servo1_padding_FL", 
+                       "servo2_servo2_padding_FL", 
+                       "servo3_calfFeet_FL"
+                       "servo1_servo1_padding_FR",
+                       "servo2_servo2_padding_FR",
+                       "servo3_calfFeet_FR"
+                       "servo1_servo1_padding_BL",
+                       "servo2_servo2_padding_BL",
+                       "servo3_calfFeet_BL"
+                       "servo1_servo1_padding_BR",
+                       "servo2_servo2_padding_BR",
+                       "servo3_calfFeet_BR"};
+        rad_positions_init_[0]  = DXL_PI;
+        rad_positions_init_[1]  = DXL_PI;
+        rad_positions_init_[2]  = DXL_PI;
+        rad_positions_init_[3]  = DXL_PI;
+        rad_positions_init_[4]  = DXL_PI;
+        rad_positions_init_[5]  = DXL_PI;
+        rad_positions_init_[6]  = DXL_PI;
+        rad_positions_init_[7]  = DXL_PI;
+        rad_positions_init_[8]  = DXL_PI;
+        rad_positions_init_[9]  = DXL_PI;
+        rad_positions_init_[10] = DXL_PI;
+        rad_positions_init_[11] = DXL_PI;
         ///////////
 
 
