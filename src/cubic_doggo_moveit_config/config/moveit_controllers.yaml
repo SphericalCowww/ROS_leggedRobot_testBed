@@ -1,0 +1,44 @@
+# MoveIt uses this configuration for controller management
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - leg_FR_controller
+    - leg_FL_controller
+    - leg_BR_controller
+    - leg_BL_controller
+
+  leg_FR_controller:
+    type: FollowJointTrajectory
+    joints:
+      - servo1_servo1_padding_FR
+      - servo2_servo2_padding_FR
+      - servo3_calfFeet_FR
+    action_ns: follow_joint_trajectory
+    default: true
+  leg_FL_controller:
+    type: FollowJointTrajectory
+    joints:
+      - servo1_servo1_padding_FL
+      - servo2_servo2_padding_FL
+      - servo3_calfFeet_FL
+    action_ns: follow_joint_trajectory
+    default: true
+  leg_BR_controller:
+    type: FollowJointTrajectory
+    joints:
+      - servo1_servo1_padding_BR
+      - servo2_servo2_padding_BR
+      - servo3_calfFeet_BR
+    action_ns: follow_joint_trajectory
+    default: true
+  leg_BL_controller:
+    type: FollowJointTrajectory
+    joints:
+      - servo1_servo1_padding_BL
+      - servo2_servo2_padding_BL
+      - servo3_calfFeet_BL
+    action_ns: follow_joint_trajectory
+    default: true
+

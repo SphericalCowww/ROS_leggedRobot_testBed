@@ -19,12 +19,12 @@
     <xacro:if value="${prefix == 'BL'}">
         <xacro:property name="rflc"              value=" 1"/>
         <xacro:property name="base_plate"        value='base_plate_B'/>
-        <xacro:property name="servo1_holder_xyz" value="-0.052 0.018 0"/>
+        <xacro:property name="servo1_holder_xyz" value="-0.052 0.018 0.004"/>
     </xacro:if>
     <xacro:if value="${prefix == 'BR'}">
         <xacro:property name="rflc"              value="-1"/>
         <xacro:property name="base_plate"        value='base_plate_B'/>
-        <xacro:property name="servo1_holder_xyz" value=" 0.052 0.018 0"/>
+        <xacro:property name="servo1_holder_xyz" value=" 0.052 0.018 0.004"/>
     </xacro:if> 
 
     <!-- ============================================================================================================================== -->

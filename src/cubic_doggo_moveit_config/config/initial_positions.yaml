@@ -1,0 +1,15 @@
+# Default initial positions for cubic_doggo's ros2_control fake system
+
+initial_positions:
+  servo1_servo1_padding_BL: 3.14
+  servo1_servo1_padding_BR: 3.14
+  servo1_servo1_padding_FL: 3.14
+  servo1_servo1_padding_FR: 3.14
+  servo2_servo2_padding_BL: 3.14
+  servo2_servo2_padding_BR: 3.14
+  servo2_servo2_padding_FL: 3.14
+  servo2_servo2_padding_FR: 3.14
+  servo3_calfFeet_BL: 3.14
+  servo3_calfFeet_BR: 3.14
+  servo3_calfFeet_FL: 3.14
+  servo3_calfFeet_FR: 3.14
