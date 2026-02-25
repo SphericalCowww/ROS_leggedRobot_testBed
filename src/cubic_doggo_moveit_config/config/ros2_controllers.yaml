@@ -30,12 +30,9 @@ leg_FR_controller:
       - servo3_calfFeet_FR
     command_interfaces:
       - position
-      - velocity
-      - effort
     state_interfaces:
       - position
       - velocity
-      - effort
     allow_nonzero_velocity_at_trajectory_end: true
 leg_FL_controller:
   ros__parameters:
@@ -45,12 +42,9 @@ leg_FL_controller:
       - servo3_calfFeet_FL
     command_interfaces:
       - position
-      - velocity
-      - effort
     state_interfaces:
       - position
       - velocity
-      - effort
     allow_nonzero_velocity_at_trajectory_end: true
 leg_BR_controller:
   ros__parameters:
@@ -60,12 +54,9 @@ leg_BR_controller:
       - servo3_calfFeet_BR
     command_interfaces:
       - position
-      - velocity
-      - effort
     state_interfaces:
       - position
       - velocity
-      - effort
     allow_nonzero_velocity_at_trajectory_end: true
 leg_BL_controller:
   ros__parameters:
@@ -75,10 +66,7 @@ leg_BL_controller:
       - servo3_calfFeet_BL
     command_interfaces:
       - position
-      - velocity
-      - effort
     state_interfaces:
       - position
       - velocity
-      - effort
     allow_nonzero_velocity_at_trajectory_end: true
