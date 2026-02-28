@@ -496,5 +496,32 @@ And to check for the installation (may need to wait a bit):
     # to find the saved trained files:
     cd /home/cubicdoggo/Documents/isaaclab/logs/rsl_rl/anymal_c_rough
 
+### URDF Import
+
+    ros2 run xacro xacro cubic_doggo.urdf.xacro > cubic_doggo.urdf
+    # change: 
+    ## package:/ => full path
+    # remove: 
+    ## </joint><link name="world"/> ## <joint name="world_base_link" type="fixed">
+    ##   <parent link="world"/>
+    ##   <child  link="base_link"/>
+    ## <origin xyz="0 0 0" rpy="0 0 0"/>
+
+    # rm ~/.cache/ # if needed
+    # File => Import => ../ROS_leggedRobot_testBed/src/my_robot_description/urdf/cubic_doggo.urdf
+    # Model => Create in Stage
+    # Links => Movable Base 
+    # Joints & Drives => Joint Configuration => Stiffness
+    # Collider Type => Convex Decomposition
+    # Import
+    # Check: Console (bottom left) or Terminal for errors
+
+    # Stage Light (center-right top) => Grey Studio 
+    # Create => Physics => Ground plane => pull it under World
+    ## Rotate the robot upright
+    # Tools => Physics => Physics Inspector => cubic_doggo (defaultPrim) => Refresh
+    ## Move joints to the correct positions (although inaccurate) => click green tick to confirm
+    # Run (left panel)
+
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
