@@ -259,7 +259,7 @@ Fix the following file:
     ##  kinematics_solver_attempts: 3
     ##  position_only_ik: True        # this one is important because the leg does NOT care about the orientation of the end effector
 
-#### launch the demo:
+### launch the demo:
 
     colcon build
     source install/setup.bash
@@ -278,7 +278,7 @@ Note that to move the motion wheel in rViz:
     # toggle if needed: MotionPlanning => Planned Path => Loop Animation
     # toggle if needed: Use Cartesian Path 
 
-#### launch with a proper launch file:
+### launch with a proper launch file:
 
     mv src/my_robot_moveit_config/config/ros2_controllers.yaml src/my_robot_bringup/config/my_robot_controllers.yaml
     # change the following line if needed in my_robot_controllers.yaml
@@ -298,14 +298,14 @@ Note that to move the motion wheel in rViz:
     ## Context => Planning Library => ompl
     ## Planning => Goal State: pose1 => Plan => Execute
 
-#### launch with gazebo, command line enabled
+### launch with gazebo, command line enabled
 
     colcon build
     source install/setup.bash
     ros2 launch my_robot_bringup my_robot.gazebo.with_commander.launch.py
     ros2 topic pub -1 /leg1_set_named example_interfaces/msg/String "{data: "pose1"}"
 
-#### launch with hardware, command line enabled
+### launch with hardware, command line enabled
 Under ``my_robot.ros2_control.xacro``, switch ``<plugin>mock_components/GenericSystem</plugin-->`` to ``<plugin>my_robot_namespace::HardwareInterfaceU2D2_my_robot</plugin>``. 
 
   * src/my_robot_**bringup**/launch/**my_robot.with_commander.launch.py**
@@ -380,7 +380,7 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
 
 [Video demo2](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait2_1Leg.mp4)
 
-#### launch with hardware, commander as a lifecycle
+### launch with hardware, commander as a lifecycle
 
     ros2 launch my_robot_bringup my_robot.with_lifecycle.launch.py
     ros2 lifecycle set /my_robot_lifecycle configure
@@ -390,6 +390,29 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
     ros2 topic pub -1 /leg1_set_joint example_interfaces/msg/Float64MultiArray "{data: [3.14, 3.14, 3.14]}"
     ros2 topic pub -1 /leg1_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.09, y: 0.01, z: 0.13, use_cartesian_path: false}" 
     ros2 service call /leg1_walk_toggle std_srvs/srv/SetBool "{data: true}"
+
+## Launch Cubic Doggo with 4 legs
+
+### launch with hardware, commander as a lifecycle
+
+    ros2 launch my_robot_bringup cubic_doggo.with_lifecycle.launch.py
+    ros2 topic pub -1 /leg_set_named example_interfaces/msg/String "{data: "pose1"}"
+    ros2 topic pub -1 /leg_set_joint example_interfaces/msg/Float64MultiArray "{data: [3.14, 3.14, 3.54]}"
+    ros2 topic pub -1 /leg_set_pose my_robot_interface/msg/MyRobotLeg1PoseTarget "{x: -0.092, y: 0.053, z: 0.135, use_cartesian_path: false}" 
+
+So far, the robot is able to stand up, but with much effort:
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/assembly4Legs4.png" width="300">
+
+
+
+
+
+
+
+
+
+
 
 ## Training with Isaac Sim
 
@@ -522,6 +545,8 @@ And to check for the installation (may need to wait a bit):
     # Tools => Physics => Physics Inspector => cubic_doggo (defaultPrim) => Refresh
     ## Move joints to the correct positions (although inaccurate) => click green tick to confirm
     # Run (left panel)
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/issacsim.png" width="300">
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
