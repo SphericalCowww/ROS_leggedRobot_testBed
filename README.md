@@ -402,7 +402,7 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
 
 So far, the robot is able to stand up, but with much effort:
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/assembly4Legs4.png" width="300">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs4.png" width="400">
 
 
 
@@ -546,7 +546,7 @@ And to check for the installation (may need to wait a bit):
     ## Move joints to the correct positions (although inaccurate) => click green tick to confirm
     # Run (left panel)
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/src/issacsim.png" width="300">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/IsaacSimImport.png" width="600">
 
 ## References:
 - AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
