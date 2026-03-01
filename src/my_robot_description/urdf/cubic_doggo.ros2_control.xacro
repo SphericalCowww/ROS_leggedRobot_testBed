@@ -4,55 +4,19 @@
         <hardware>
             <!--plugin>mock_components/GenericSystem</plugin-->
             <plugin>cubic_doggo_namespace/HardwareInterfaceU2D2_cubic_doggo</plugin>
-            <param name="servo1_channel_FR">11</param>
-            <param name="servo2_channel_FR">12</param>
-            <param name="servo3_channel_FR">13</param>
-            <param name="servo1_channel_FL">21</param>
-            <param name="servo2_channel_FL">22</param>
-            <param name="servo3_channel_FL">23</param>
-            <param name="servo1_channel_BR">31</param>
-            <param name="servo2_channel_BR">32</param>
-            <param name="servo3_channel_BR">33</param>
-            <param name="servo1_channel_BL">41</param>
-            <param name="servo2_channel_BL">42</param>
-            <param name="servo3_channel_BL">43</param>
+            <param name="servo1_channel_FL">11</param>
+            <param name="servo2_channel_FL">12</param>
+            <param name="servo3_channel_FL">13</param>
+            <param name="servo1_channel_FR">21</param>
+            <param name="servo2_channel_FR">22</param>
+            <param name="servo3_channel_FR">23</param>
+            <param name="servo1_channel_BL">31</param>
+            <param name="servo2_channel_BL">32</param>
+            <param name="servo3_channel_BL">33</param>
+            <param name="servo1_channel_BR">41</param>
+            <param name="servo2_channel_BR">42</param>
+            <param name="servo3_channel_BR">43</param>
         </hardware>
-        <joint name="servo1_servo1_padding_FR">
-            <command_interface name="position"/>
-            <state_interface name="position">
-              <param name="initial_value">3.14</param>
-            </state_interface>
-            <state_interface name="velocity">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-            <state_interface name="effort">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
-        <joint name="servo2_servo2_padding_FR">
-            <command_interface name="position"/>
-            <state_interface name="position">
-              <param name="initial_value">3.14</param>
-            </state_interface>
-            <state_interface name="velocity">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-            <state_interface name="effort">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
-        <joint name="servo3_calfFeet_FR">
-            <command_interface name="position"/>
-            <state_interface name="position">
-              <param name="initial_value">3.14</param>
-            </state_interface>
-            <state_interface name="velocity">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-            <state_interface name="effort">
-              <param name="initial_value">0.0</param>
-            </state_interface>
-        </joint>
         <joint name="servo1_servo1_padding_FL">
             <command_interface name="position"/>
             <state_interface name="position">
@@ -89,7 +53,7 @@
               <param name="initial_value">0.0</param>
             </state_interface>
         </joint>
-        <joint name="servo1_servo1_padding_BR">
+        <joint name="servo1_servo1_padding_FR">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
@@ -101,7 +65,7 @@
               <param name="initial_value">0.0</param>
             </state_interface>
         </joint>
-        <joint name="servo2_servo2_padding_BR">
+        <joint name="servo2_servo2_padding_FR">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
@@ -113,7 +77,7 @@
               <param name="initial_value">0.0</param>
             </state_interface>
         </joint>
-        <joint name="servo3_calfFeet_BR">
+        <joint name="servo3_calfFeet_FR">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
@@ -150,6 +114,42 @@
             </state_interface>
         </joint>
         <joint name="servo3_calfFeet_BL">
+            <command_interface name="position"/>
+            <state_interface name="position">
+              <param name="initial_value">3.14</param>
+            </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+        <joint name="servo1_servo1_padding_BR">
+            <command_interface name="position"/>
+            <state_interface name="position">
+              <param name="initial_value">3.14</param>
+            </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+        <joint name="servo2_servo2_padding_BR">
+            <command_interface name="position"/>
+            <state_interface name="position">
+              <param name="initial_value">3.14</param>
+            </state_interface>
+            <state_interface name="velocity">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+            <state_interface name="effort">
+              <param name="initial_value">0.0</param>
+            </state_interface>
+        </joint>
+        <joint name="servo3_calfFeet_BR">
             <command_interface name="position"/>
             <state_interface name="position">
               <param name="initial_value">3.14</param>
