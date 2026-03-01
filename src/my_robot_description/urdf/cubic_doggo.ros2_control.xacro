@@ -2,19 +2,20 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <ros2_control name="cubic_doggo_controller" type="system">
         <hardware>
-            <plugin>mock_components/GenericSystem</plugin>
+            <!--plugin>mock_components/GenericSystem</plugin-->
+            <plugin>cubic_doggo_namespace/HardwareInterfaceU2D2_cubic_doggo</plugin>
             <param name="servo1_channel_FR">11</param>
             <param name="servo2_channel_FR">12</param>
             <param name="servo3_channel_FR">13</param>
-            <param name="servo1_channel_FL">11</param>
-            <param name="servo2_channel_FL">12</param>
-            <param name="servo3_channel_FL">13</param>
-            <param name="servo1_channel_GR">11</param>
-            <param name="servo2_channel_GR">12</param>
-            <param name="servo3_channel_GR">13</param>
-            <param name="servo1_channel_GL">11</param>
-            <param name="servo2_channel_GL">12</param>
-            <param name="servo3_channel_GL">13</param>
+            <param name="servo1_channel_FL">21</param>
+            <param name="servo2_channel_FL">22</param>
+            <param name="servo3_channel_FL">23</param>
+            <param name="servo1_channel_BR">31</param>
+            <param name="servo2_channel_BR">32</param>
+            <param name="servo3_channel_BR">33</param>
+            <param name="servo1_channel_BL">41</param>
+            <param name="servo2_channel_BL">42</param>
+            <param name="servo3_channel_BL">43</param>
         </hardware>
         <joint name="servo1_servo1_padding_FR">
             <command_interface name="position"/>

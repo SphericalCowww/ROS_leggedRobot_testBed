@@ -39,13 +39,13 @@ namespace cubic_doggo_namespace {
         servo_channels_[11] = std::stoi(params.hardware_info.hardware_parameters.at("servo3_channel_BR"));
         joint_names = {"servo1_servo1_padding_FL", 
                        "servo2_servo2_padding_FL", 
-                       "servo3_calfFeet_FL"
+                       "servo3_calfFeet_FL",
                        "servo1_servo1_padding_FR",
                        "servo2_servo2_padding_FR",
-                       "servo3_calfFeet_FR"
+                       "servo3_calfFeet_FR",
                        "servo1_servo1_padding_BL",
                        "servo2_servo2_padding_BL",
-                       "servo3_calfFeet_BL"
+                       "servo3_calfFeet_BL",
                        "servo1_servo1_padding_BR",
                        "servo2_servo2_padding_BR",
                        "servo3_calfFeet_BR"};

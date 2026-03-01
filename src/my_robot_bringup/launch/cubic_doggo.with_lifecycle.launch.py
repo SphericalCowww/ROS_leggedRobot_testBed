@@ -26,10 +26,16 @@ def generate_launch_description():
         parameters=[{'robot_description': robot_description}],
     )
 
+    moveit_config = (
+        MoveItConfigsBuilder("cubic_doggo", package_name="cubic_doggo_moveit_config")
+        .robot_description(file_path=urdf_path)
+        .to_moveit_configs()
+    )
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
+            moveit_config.robot_description,
             robot_controllers,
             {'use_steady_clock_for_update': False},],
     )
@@ -39,16 +45,25 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_state_broadcaster"],
     )
-    leg1_controller_spawner = Node(
+    leg_FR_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["leg1_controller"],
+        arguments=["leg_FR_controller"],
     )
-    
-    moveit_config = (
-        MoveItConfigsBuilder("cubic_doggo", package_name="cubic_doggo_moveit_config")
-        .robot_description(file_path=urdf_path)
-        .to_moveit_configs()
+    leg_FL_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["leg_FL_controller"],
+    )
+    leg_BR_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["leg_BR_controller"],
+    )
+    leg_BL_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["leg_BL_controller"],
     )
     moveit_launcher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(moveit_config_path),
@@ -59,7 +74,7 @@ def generate_launch_description():
         executable="cubic_doggo_lifecycle",
         parameters=[
             moveit_config.robot_description,           # the URDF math
-            moveit_config.robot_description_semantic,  # the SRDF (defines 'leg1')
+            moveit_config.robot_description_semantic,  # the SRDF 
             moveit_config.robot_description_kinematics,# the kinematics.yaml
             moveit_config.joint_limits,                # the joint_limits.yaml 
             {"jump_threshold": 0.15},                  # for computeCartesianPath
@@ -84,7 +99,10 @@ def generate_launch_description():
         robot_state_publisher_node,
         control_node,
         joint_state_broadcaster_spawner,
-        leg1_controller_spawner,
+        leg_FR_controller_spawner,
+        leg_FL_controller_spawner,
+        leg_BR_controller_spawner,
+        leg_BL_controller_spawner,
         moveit_launcher,
         lifecycle_node,
         rviz_node,
