@@ -168,8 +168,8 @@ private:
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) { 
             numberOfJoints += leg_interface_[legIdx]->getJointNames().size();
         }
-        if (msg->data.size() != numberOfJoints) {
-            RCLCPP_WARN(get_logger(), "legJointCallback(): message empty");
+        if (msg->data.size() != (1+numberOfJoints/legN)) {
+            RCLCPP_WARN(get_logger(), "legJointCallback(): message length mismatch");
             return;
         }
         legJointTarget_(msg->data);
@@ -186,13 +186,10 @@ private:
         planAndExecute_();
     }
     void legJointTarget_(const std::vector<double> &joints) {
-        for (std::size_t legIdx = 0; legIdx < legN; ++legIdx) {
-            std::size_t start = legIdx*jointNperLeg;
-            std::size_t end   = start + jointNperLeg;
-            std::vector<double> leg_joints(joints.begin()+start, joints.begin()+end);
-            leg_interface_[legIdx]->setJointValueTarget(leg_joints);
-        }
-        planAndExecute_();
+        std::size_t legIdx = static_cast<std::size_t>(joints[0]);
+        std::vector<double> leg_joints(joints.begin()+1, joints.end());
+        leg_interface_[legIdx]->setJointValueTarget(leg_joints);
+        planAndExecute_(legIdx);
     }
     void legPoseTarget_(int legIdx, double x, double y, double z, bool use_cartesian_path=false) {
         geometry_msgs::msg::Pose target_pose = endEffector_pose_[legIdx].pose;
@@ -339,6 +336,14 @@ private:
         */
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void planAndExecute_(std::size_t legIdx) {
+        success_ = (leg_interface_[legIdx]->plan(move_plan_[legIdx]) == moveit::core::MoveItErrorCode::SUCCESS);
+        if (success_) {
+            leg_interface_[legIdx]->execute(move_plan_[legIdx]);
+        } else {
+            RCLCPP_WARN(get_logger(), "planAndExecute_(): planning failed, legIdx=%ld", legIdx);
+        }
+    }
     void planAndExecute_() {
         success_ = true;
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
