@@ -181,7 +181,7 @@ private:
     ///////////
     void legNamedTarget_(const std::string &name) {
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-            leg_interface_[legIdx]->setNamedTarget(name);
+            leg_interface_[legIdx]->setNamedTarget(name+"_"+planning_group_[legIdx]);
         }
         planAndExecute_();
     }
@@ -276,7 +276,7 @@ private:
             pose_2.position.y = y0 + traj_arc_rad;
             pose_2.position.z = z0 - traj_arc_rad;
 
-            auto joint_model_group = current_robot_state_->getJointModelGroup(planning_group_);
+            auto joint_model_group = current_robot_state_->getJointModelGroup(planning_group_[legIdx]);
             moveit::core::RobotState state_0(*current_robot_state_);
             moveit::core::RobotState state_1(*current_robot_state_);
             moveit::core::RobotState state_2(*current_robot_state_);
@@ -290,7 +290,7 @@ private:
             }
 
             auto traj = std::make_shared<robot_trajectory::RobotTrajectory>(leg_interface_[legIdx]->getRobotModel(), 
-                                                                            planning_group_);
+                                                                            planning_group_[legIdx]);
             traj->addSuffixWayPoint(state_0, 0.0);
             traj->addSuffixWayPoint(state_1, 0.0);
             traj->addSuffixWayPoint(state_2, 0.0);
@@ -352,8 +352,14 @@ private:
             }
         }
         if (success_) {
+            std::vector<std::thread> threads;
             for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-                leg_interface_[legIdx]->execute(move_plan_[legIdx]);
+                threads.emplace_back( [&, legIdx](){
+                    leg_interface_[legIdx]->execute(move_plan_[legIdx]);
+                });
+            }
+            for (auto& threadObj : threads) {
+                threadObj.join();
             }
         } else {
             RCLCPP_WARN(get_logger(), "planAndExecute_(): planning failed");
