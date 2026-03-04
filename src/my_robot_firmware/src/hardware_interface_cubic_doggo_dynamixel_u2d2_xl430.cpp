@@ -49,18 +49,18 @@ namespace cubic_doggo_namespace {
                        "servo1_servo1_padding_BR",
                        "servo2_servo2_padding_BR",
                        "servo3_calfFeet_BR"};
-        rad_positions_init_[0]  = DXL_PI;
-        rad_positions_init_[1]  = DXL_PI - DXL_PI/4.0;
-        rad_positions_init_[2]  = DXL_PI - DXL_PI/8.0;
-        rad_positions_init_[3]  = DXL_PI;
-        rad_positions_init_[4]  = DXL_PI + DXL_PI/4.0;
-        rad_positions_init_[5]  = DXL_PI + DXL_PI/8.0;
-        rad_positions_init_[6]  = DXL_PI;
-        rad_positions_init_[7]  = DXL_PI - DXL_PI/4.0;
-        rad_positions_init_[8]  = DXL_PI - DXL_PI/8.0;
-        rad_positions_init_[9]  = DXL_PI;
-        rad_positions_init_[10] = DXL_PI + DXL_PI/4.0;
-        rad_positions_init_[11] = DXL_PI + DXL_PI/8.0;
+        rad_positions_init_[0]  = 3.44;                      //DXL_PI + DXL_PI/32.0;
+        rad_positions_init_[1]  = 2.54;                      //DXL_PI - DXL_PI/4.0;
+        rad_positions_init_[2]  = 4.14;                      //DXL_PI - DXL_PI/8.0;
+        rad_positions_init_[3]  = 2.84;                      //DXL_PI - DXL_PI/32.0;
+        rad_positions_init_[4]  = 3.74;                      //DXL_PI + DXL_PI/4.0;
+        rad_positions_init_[5]  = 2.14;                      //DXL_PI + DXL_PI/8.0;
+        rad_positions_init_[6]  = 3.34;                      //DXL_PI + DXL_PI/32.0;
+        rad_positions_init_[7]  = 2.54;                      //DXL_PI - DXL_PI/4.0;
+        rad_positions_init_[8]  = 4.14;                      //DXL_PI - DXL_PI/8.0;
+        rad_positions_init_[9]  = 2.84;                      //DXL_PI - DXL_PI/32.0;
+        rad_positions_init_[10] = 3.74;                      //DXL_PI + DXL_PI/4.0;
+        rad_positions_init_[11] = 2.14;                      //DXL_PI + DXL_PI/8.0;
         ///////////
 
 
