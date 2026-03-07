@@ -45,25 +45,10 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_state_broadcaster"],
     )
-    leg_FR_controller_spawner = Node(
+    all_legs_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["leg_FR_controller"],
-    )
-    leg_FL_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["leg_FL_controller"],
-    )
-    leg_BR_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["leg_BR_controller"],
-    )
-    leg_BL_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["leg_BL_controller"],
+        arguments=["all_legs_controller"],
     )
     moveit_launcher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(moveit_config_path),
@@ -99,10 +84,7 @@ def generate_launch_description():
         robot_state_publisher_node,
         control_node,
         joint_state_broadcaster_spawner,
-        leg_FR_controller_spawner,
-        leg_FL_controller_spawner,
-        leg_BR_controller_spawner,
-        leg_BL_controller_spawner,
+        all_legs_controller_spawner,
         moveit_launcher,
         lifecycle_node,
         rviz_node,

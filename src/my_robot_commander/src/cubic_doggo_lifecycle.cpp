@@ -36,6 +36,9 @@ using ros_array    = example_interfaces::msg::Float64MultiArray;
 using custom_array = my_robot_interface::msg::CubicDoggoLegPoseTarget;
 using ros_bool     = example_interfaces::msg::Bool;
 
+double DEFAULT_VEL_SCALAR = 0.5
+double DEFAULT_ACC_SCALAR = 0.1
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MyRobotLifecycleManager : public rclcpp_lifecycle::LifecycleNode {
 public:
@@ -49,9 +52,15 @@ public:
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
             leg_interface_[legIdx] = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_[legIdx]);
             while (rclcpp::ok() && !leg_interface_[legIdx]->startStateMonitor(1.0)) {
-                RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state...");
+                RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state %s",
+                            planning_group_[legIdx]);
             }
-        } 
+        }
+        all_legs_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, all_legs_planning_group_);
+        while (rclcpp::ok() && !all_legs_interface_->startStateMonitor(1.0)) {
+            RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state %s", 
+                        all_legs_planning_group_);
+        }
  
         current_lifecycle_state_ = "state_initialized";
         RCLCPP_INFO(get_logger(), "constructor(): %s", current_lifecycle_state_.c_str());
@@ -61,14 +70,21 @@ public:
 
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
             leg_interface_[legIdx]->setEndEffectorLink(endEffector_link_[legIdx]);
-            leg_interface_[legIdx]->setMaxVelocityScalingFactor(1.0);
-            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(1.0);
+            leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
             leg_interface_[legIdx]->setGoalPositionTolerance(0.01);
             leg_interface_[legIdx]->setGoalOrientationTolerance(0.1);
             leg_interface_[legIdx]->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
             leg_interface_[legIdx]->setNumPlanningAttempts(10);
             leg_interface_[legIdx]->setPlanningTime(60.0);
         }
+        all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+        all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
+        all_legs_interface_->setGoalPositionTolerance(0.01);
+        all_legs_interface_->setGoalOrientationTolerance(0.1);
+        all_legs_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
+        all_legs_interface_->setNumPlanningAttempts(10);
+        all_legs_interface_->setPlanningTime(60.0);
  
         state_service_ = this->create_service<std_srvs::srv::Trigger>(
             "get_robot_state",
@@ -125,6 +141,7 @@ public:
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
             leg_interface_[legIdx]->stop();
         }
+        all_legs_interface_->stop();
         current_lifecycle_state_ = "state_stopped";
         RCLCPP_INFO(get_logger(), "on_deactivation(): %s", current_lifecycle_state_.c_str());
         return CallbackReturn::SUCCESS;
@@ -133,8 +150,10 @@ public:
         RCLCPP_INFO(get_logger(), "on_cleanup(): %s", current_lifecycle_state_.c_str());
 
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-            leg_interface_[legIdx].reset();
+            leg_interface_[legIdx]->reset();
         }
+        all_legs_interface_->reset();
+        leg_named_subscriber_.reset();
         leg_joint_subscriber_.reset();
         leg_pose_subscriber_.reset();
  
@@ -146,8 +165,13 @@ public:
         RCLCPP_INFO(get_logger(), "on_shutdown(): %s", current_lifecycle_state_.c_str());
 
         for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+            leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
             leg_interface_[legIdx]->stop();
         }
+        all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+        all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
+        all_legs_interface_->stop();
     
         current_lifecycle_state_ = "state_stopped";
         RCLCPP_INFO(get_logger(), "on_shutdown(): %s", current_lifecycle_state_.c_str());
@@ -180,9 +204,7 @@ private:
     }
     ///////////
     void legNamedTarget_(const std::string &name) {
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-            leg_interface_[legIdx]->setNamedTarget(name+"_"+planning_group_[legIdx]);
-        }
+        all_legs_interface_->setNamedTarget(name);
         planAndExecute_();
     }
     void legJointTarget_(const std::vector<double> &joints) {
@@ -201,7 +223,7 @@ private:
             if (success_ == false) {
                 RCLCPP_ERROR(get_logger(), "legPoseTarget_(): failed to find IK solution for target!");
             }
-            planAndExecute_();
+            planAndExecute_(legIdx);
         } else {
             moveit_msgs::msg::RobotTrajectory trajectory;
             std::vector<geometry_msgs::msg::Pose> waypoints;
@@ -250,6 +272,8 @@ private:
     }
     void walkingLoop_() {
         /*
+        all_legs_interface_->setMaxVelocityScalingFactor(1.0);
+        all_legs_interface_->setMaxAccelerationScalingFactor(1.0);
         while (keep_running_thread_ && rclcpp::ok()) {
             if (!is_walking_) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -345,22 +369,9 @@ private:
         }
     }
     void planAndExecute_() {
-        success_ = true;
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-            if (!(leg_interface_[legIdx]->plan(move_plan_[legIdx]) == moveit::core::MoveItErrorCode::SUCCESS)) {
-                success_ = false; 
-            }
-        }
+        success_ = ((all_legs_interface_->plan(all_legs_move_plan_) == moveit::core::MoveItErrorCode::SUCCESS));
         if (success_) {
-            std::vector<std::thread> threads;
-            for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-                threads.emplace_back( [&, legIdx](){
-                    leg_interface_[legIdx]->execute(move_plan_[legIdx]);
-                });
-            }
-            for (auto& threadObj : threads) {
-                threadObj.join();
-            }
+            all_legs_interface_->execute(all_legs_move_plan_);
         } else {
             RCLCPP_WARN(get_logger(), "planAndExecute_(): planning failed");
         }
@@ -392,6 +403,12 @@ private:
     std::array<double, legN> endEffector_x_{};
     std::array<double, legN> endEffector_y_{};
     std::array<double, legN> endEffector_z_{};
+    std::string                           all_legs_planning_group_ = "all_legs";
+    std::vector<std::string>              all_legs_endEffector_link_;
+    std::shared_ptr<MoveGroupInterface>   all_legs_interface_;
+    moveit::core::RobotStatePtr           all_legs_current_robot_state_;
+    std::vector<geometry_msgs::msg::Pose> all_legs_endEffector_pose_;
+    MoveGroupInterface::Plan              all_legs_move_plan_;
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     rclcpp::Subscription<ros_string>  ::SharedPtr leg_named_subscriber_;
