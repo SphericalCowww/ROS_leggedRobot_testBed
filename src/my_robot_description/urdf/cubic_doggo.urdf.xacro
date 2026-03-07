@@ -20,7 +20,7 @@
             </geometry>
             <origin xyz="0.0 0.0 0.002" rpy="0 0 0"/>
         </collision>
-        <xacro:lazy_inertia m="0.0336"/>
+        <xacro:box_inertia m="0.06" x="0.056" y="0.252" z="0.004" o_xyz="0 0 0.002" o_rpy="0 0 0"/>
     </link>
     <joint name="world_base_link" type="fixed">
         <parent link="world"/>
@@ -42,7 +42,7 @@
             </geometry>
             <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
-        <xacro:lazy_inertia m="0.0336"/>
+        <xacro:box_inertia m="0.0336" x="0.141" y="0.036" z="0.004" o_xyz="0 0.018 0.002" o_rpy="0 0 0"/>
     </link>
     <joint name="torso_base_plate_F" type="fixed">
         <parent link="base_link"/>
@@ -64,7 +64,7 @@
             </geometry>
             <origin xyz="0 0.018 0.002" rpy="0 0 0"/>
         </collision>
-        <xacro:lazy_inertia m="0.0336"/>
+        <xacro:box_inertia m="0.0336" x="0.141" y="0.036" z="0.004" o_xyz="0 0.018 0.002" o_rpy="0 0 0"/>
     </link>
     <joint name="torso_base_plate_B" type="fixed">
         <parent link="base_link"/>

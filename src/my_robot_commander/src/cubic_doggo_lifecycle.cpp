@@ -61,19 +61,19 @@ public:
             return CallbackReturn::FAILURE;
         }
 
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx] = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_[legIdx]);
             while (rclcpp::ok() && !leg_interface_[legIdx]->startStateMonitor(1.0)) {
                 RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state %s",
-                            planning_group_[legIdx]);
+                            planning_group_[legIdx].c_str());
             }
         }
         all_legs_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, all_legs_planning_group_);
         while (rclcpp::ok() && !all_legs_interface_->startStateMonitor(1.0)) {
             RCLCPP_INFO(get_logger(), "on_configure): waiting for valid MoveGroupInterface state %s", 
-                        all_legs_planning_group_);
+                        all_legs_planning_group_.c_str());
         }
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx]->setEndEffectorLink(endEffector_link_[legIdx]);
             leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
             leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
@@ -143,7 +143,7 @@ public:
             walking_thread_.join();
         }
 
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx]->stop();
         }
         all_legs_interface_->stop();
@@ -154,10 +154,10 @@ public:
     CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_cleanup(): %s", current_lifecycle_state_.c_str());
 
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-            leg_interface_[legIdx]->reset();
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
+            leg_interface_[legIdx].reset();
         }
-        all_legs_interface_->reset();
+        all_legs_interface_.reset();
         leg_named_subscriber_.reset();
         leg_joint_subscriber_.reset();
         leg_pose_subscriber_.reset();
@@ -169,7 +169,7 @@ public:
     CallbackReturn on_shutdown(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_shutdown(): %s", current_lifecycle_state_.c_str());
 
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
             leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
             leg_interface_[legIdx]->stop();
@@ -193,11 +193,7 @@ private:
     }
     void legJointCallback_(const ros_array::SharedPtr msg) {
         RCLCPP_INFO(get_logger(), "legJointCallback(): command received");
-        std::size_t numberOfJoints = 0;
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) { 
-            numberOfJoints += leg_interface_[legIdx]->getJointNames().size();
-        }
-        if (msg->data.size() != (1+numberOfJoints/legN)) {
+        if (msg->data.size() != (1+jointNperLeg)) {
             RCLCPP_WARN(get_logger(), "legJointCallback(): message length mismatch");
             return;
         }
@@ -214,9 +210,15 @@ private:
     }
     void legJointTarget_(const std::vector<double> &joints) {
         std::size_t legIdx = static_cast<std::size_t>(joints[0]);
-        std::vector<double> leg_joints(joints.begin()+1, joints.end());
-        leg_interface_[legIdx]->setJointValueTarget(leg_joints);
-        planAndExecute_(legIdx);
+        all_legs_current_robot_state_ = all_legs_interface_->getCurrentState(2.0);
+        const std::vector<std::string>& leg_joint_names = leg_interface_[legIdx]->getJointNames();
+        for (std::size_t jointIdx = 0; jointIdx < (joints.size()-1); jointIdx++) {
+            std::string leg_joint_name = leg_joint_names[jointIdx];
+            double joint_val = joints[jointIdx + 1];
+            all_legs_current_robot_state_->setJointPositions(leg_joint_name, &joint_val);
+        }
+        all_legs_interface_->setJointValueTarget(*all_legs_current_robot_state_);
+        planAndExecute_();
     }
     void legPoseTarget_(int legIdxInput, double x, double y, double z, bool use_cartesian_path=false) {
         std::size_t legIdx = static_cast<std::size_t>(legIdxInput);
@@ -304,7 +306,7 @@ private:
             }
             loadCurrentRobotState_();
             if (home_captured == false) {
-                for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+                for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
                     home_x[legIdx] = endEffector_x_[legIdx];
                     home_y[legIdx] = endEffector_y_[legIdx];
                     home_z[legIdx] = endEffector_z_[legIdx];
@@ -319,7 +321,7 @@ private:
                 moveit::core::RobotStatePtr phase_state = 
                     std::make_shared<moveit::core::RobotState>(*all_legs_current_robot_state_);
 
-                for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+                for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
                     double target_x = home_x[legIdx];
                     double target_y = home_y[legIdx];
                     double target_z = home_z[legIdx];
@@ -440,8 +442,11 @@ private:
             RCLCPP_ERROR(get_logger(), "loadCurrentRobotState_(): timeout to fetch current robot state");
             return;
         }
+        const moveit::core::JointModelGroup* joint_model_group = 
+            all_legs_current_robot_state_->getJointModelGroup(all_legs_planning_group_);
+        all_legs_current_robot_state_->copyJointGroupPositions(joint_model_group, all_legs_jointVals_);
         all_legs_interface_->setStartStateToCurrentState();
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             endEffector_pose_[legIdx] = leg_interface_[legIdx]->getCurrentPose(endEffector_link_[legIdx]);
             endEffector_x_[legIdx] = endEffector_pose_[legIdx].pose.position.x;
             endEffector_y_[legIdx] = endEffector_pose_[legIdx].pose.position.y;
@@ -459,9 +464,9 @@ private:
     std::array<std::string, legN> planning_group_  {"leg_FL",        "leg_FR",       "leg_BL",       "leg_BR"};
     std::array<std::string, legN> endEffector_link_{"calfSphere_FL", "calfSphere_FR","calfSphere_BL","calfSphere_BR"};
     std::array<std::shared_ptr<MoveGroupInterface>, legN> leg_interface_;
-    std::array<moveit::core::RobotStatePtr, legN>         current_robot_state_;
-    std::array<geometry_msgs::msg::PoseStamped, legN>     endEffector_pose_;
-    std::array<MoveGroupInterface::Plan, legN>            move_plan_;
+    std::array<moveit::core::RobotStatePtr,         legN> current_robot_state_;
+    std::array<geometry_msgs::msg::PoseStamped,     legN> endEffector_pose_;
+    std::array<MoveGroupInterface::Plan,            legN> move_plan_;
     std::array<double, legN> endEffector_x_{};
     std::array<double, legN> endEffector_y_{};
     std::array<double, legN> endEffector_z_{};
@@ -471,6 +476,7 @@ private:
     moveit::core::RobotStatePtr           all_legs_current_robot_state_;
     std::vector<geometry_msgs::msg::Pose> all_legs_endEffector_pose_;
     MoveGroupInterface::Plan              all_legs_move_plan_;
+    std::vector<double>                   all_legs_jointVals_;
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     rclcpp::Subscription<ros_string>  ::SharedPtr leg_named_subscriber_;
@@ -506,7 +512,8 @@ int main(int argc, char **argv) {
     while (rclcpp::ok() && lifecycle_manager_node->get_current_state().id() != State::PRIMARY_STATE_ACTIVE) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (lifecycle_manager_node->get_current_state().id() == State::PRIMARY_STATE_INACTIVE) {
-             lifecycle_manager_node->trigger_transition(rclcpp_lifecycle::Transition(Transition::TRANSITION_ACTIVATE));
+            lifecycle_manager_node->trigger_transition(
+                rclcpp_lifecycle::Transition(Transition::TRANSITION_ACTIVATE));
         }
     }
     while (rclcpp::ok()) {
