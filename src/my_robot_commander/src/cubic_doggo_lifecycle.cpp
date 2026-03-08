@@ -36,9 +36,8 @@ using ros_array    = example_interfaces::msg::Float64MultiArray;
 using custom_array = my_robot_interface::msg::CubicDoggoLegPoseTarget;
 using ros_bool     = example_interfaces::msg::Bool;
 
-const double DEFAULT_VEL_SCALAR = 0.3;
-const double DEFAULT_ACC_SCALAR = 0.05;
-
+const double DEFAULT_VEL_SCALE = 0.5;
+const double DEFAULT_ACC_SCALE = 0.1;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MyRobotLifecycleManager : public rclcpp_lifecycle::LifecycleNode {
 public:
@@ -75,21 +74,18 @@ public:
         }
         for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx]->setEndEffectorLink(endEffector_link_[legIdx]);
-            leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
             leg_interface_[legIdx]->setGoalPositionTolerance(0.01);
             leg_interface_[legIdx]->setGoalOrientationTolerance(0.1);
             leg_interface_[legIdx]->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
             leg_interface_[legIdx]->setNumPlanningAttempts(10);
             leg_interface_[legIdx]->setPlanningTime(0.1);
         }
-        all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-        all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
         all_legs_interface_->setGoalPositionTolerance(0.01);
         all_legs_interface_->setGoalOrientationTolerance(0.1);
         all_legs_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
         all_legs_interface_->setNumPlanningAttempts(10);
         all_legs_interface_->setPlanningTime(0.1);
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
  
         state_service_ = this->create_service<std_srvs::srv::Trigger>(
             "get_robot_state",
@@ -132,6 +128,7 @@ public:
     }
     CallbackReturn on_deactivate(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_deactivation(): %s", current_lifecycle_state_.c_str());
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
 
         leg_named_subscriber_.reset();
         leg_joint_subscriber_.reset();
@@ -153,6 +150,7 @@ public:
     }
     CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_cleanup(): %s", current_lifecycle_state_.c_str());
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
 
         for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
             leg_interface_[legIdx].reset();
@@ -168,14 +166,11 @@ public:
     }
     CallbackReturn on_shutdown(const rclcpp_lifecycle::State &) override {
         RCLCPP_INFO(get_logger(), "on_shutdown(): %s", current_lifecycle_state_.c_str());
-
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
+        
         for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
-            leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
             leg_interface_[legIdx]->stop();
         }
-        all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-        all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
         all_legs_interface_->stop();
     
         current_lifecycle_state_ = "state_stopped";
@@ -189,10 +184,12 @@ public:
 private:
     void legNamedCallback_(const ros_string::SharedPtr msg) {
         RCLCPP_INFO(get_logger(), "legNamedCallback(): command received");
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
         legNamedTarget_(msg->data);
     }
     void legJointCallback_(const ros_array::SharedPtr msg) {
         RCLCPP_INFO(get_logger(), "legJointCallback(): command received");
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
         if (msg->data.size() != (1+jointNperLeg)) {
             RCLCPP_WARN(get_logger(), "legJointCallback(): message length mismatch");
             return;
@@ -201,6 +198,7 @@ private:
     }
     void legPoseCallback_(const custom_array::SharedPtr msg) {
         RCLCPP_INFO(get_logger(), "legPoseCallback(): command received");
+        setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
         legPoseTarget_(msg->leg_index, msg->x, msg->y, msg->z);
     }
     ///////////
@@ -276,8 +274,7 @@ private:
         double stride = 0.04;
         double lift   = 0.03; 
 
-        all_legs_interface_->setMaxVelocityScalingFactor(maxVelScale);
-        all_legs_interface_->setMaxAccelerationScalingFactor(maxAccScale);
+        setDefaultVelAccScaler_(maxVelScale, maxAccScale);
         auto all_legs_robot_model = all_legs_interface_->getRobotModel();
         std::array<double, legN> home_x, home_y, home_z;
         bool home_captured = false;
@@ -387,15 +384,18 @@ private:
                     }
                 }
             }
-            for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
-                leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-                leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
-            }
-            all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
-            all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
+            setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
         }
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void setDefaultVelAccScaler_(double velScale, double accScale) {
+        for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
+            leg_interface_[legIdx]->setMaxVelocityScalingFactor(velScale);
+            leg_interface_[legIdx]->setMaxAccelerationScalingFactor(accScale);
+        }
+        all_legs_interface_->setMaxVelocityScalingFactor(velScale);
+        all_legs_interface_->setMaxAccelerationScalingFactor(accScale);
+    }
     void planAndExecute_(std::size_t legIdx) {
         success_ = (leg_interface_[legIdx]->plan(move_plan_[legIdx]) == moveit::core::MoveItErrorCode::SUCCESS);
         if (success_) {
