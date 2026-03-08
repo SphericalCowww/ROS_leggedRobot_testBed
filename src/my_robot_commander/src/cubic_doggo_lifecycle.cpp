@@ -201,7 +201,7 @@ private:
     }
     void legPoseCallback_(const custom_array::SharedPtr msg) {
         RCLCPP_INFO(get_logger(), "legPoseCallback(): command received");
-        legPoseTarget_(msg->leg_index, msg->x, msg->y, msg->z, msg->use_cartesian_path);
+        legPoseTarget_(msg->leg_index, msg->x, msg->y, msg->z);
     }
     ///////////
     void legNamedTarget_(const std::string &name) {
@@ -213,42 +213,28 @@ private:
         all_legs_current_robot_state_ = all_legs_interface_->getCurrentState(2.0);
         const std::vector<std::string>& leg_joint_names = leg_interface_[legIdx]->getJointNames();
         for (std::size_t jointIdx = 0; jointIdx < (joints.size()-1); jointIdx++) {
-            std::string leg_joint_name = leg_joint_names[jointIdx];
             double joint_val = joints[jointIdx + 1];
-            all_legs_current_robot_state_->setJointPositions(leg_joint_name, &joint_val);
+            all_legs_current_robot_state_->setJointPositions(leg_joint_names[jointIdx], &joint_val);
         }
         all_legs_interface_->setJointValueTarget(*all_legs_current_robot_state_);
         planAndExecute_();
     }
-    void legPoseTarget_(int legIdxInput, double x, double y, double z, bool use_cartesian_path=false) {
+    void legPoseTarget_(int legIdxInput, double x, double y, double z) {
         std::size_t legIdx = static_cast<std::size_t>(legIdxInput);
         geometry_msgs::msg::Pose target_pose = endEffector_pose_[legIdx].pose;
         target_pose.position.x = x;
         target_pose.position.y = y;
         target_pose.position.z = z;
-        if (use_cartesian_path == false) {
-            success_ = leg_interface_[legIdx]->setApproximateJointValueTarget(target_pose, endEffector_link_[legIdx]);
-            if (success_ == false) {
-                RCLCPP_ERROR(get_logger(), "legPoseTarget_(): failed to find IK solution for target!");
-                return;
-            }
-            planAndExecute_(legIdx);
-        } else {
-            moveit_msgs::msg::RobotTrajectory robo_traj;
-            std::vector<geometry_msgs::msg::Pose> waypoints;
-            waypoints.push_back(endEffector_pose_[legIdx].pose);
-            waypoints.push_back(target_pose);
-
-            double fraction = leg_interface_[legIdx]->computeCartesianPath(waypoints, cartesianConstraintStepsize_, 
-                                                                           robo_traj);
-            if (cartesianConstraintFractionThreshold_ <= fraction) {
-                leg_interface_[legIdx]->execute(robo_traj);
-            } else {
-                 RCLCPP_INFO(get_logger(), "legPoseTarget_(): Cartesian computation fraction of "
-                                                  "%lf, lower than the threshold of %lf", 
-                                                  fraction, cartesianConstraintFractionThreshold_);
-            }
+            
+        success_ = leg_interface_[legIdx]->setApproximateJointValueTarget(target_pose, endEffector_link_[legIdx]);
+        if (success_ == false) {
+            RCLCPP_ERROR(get_logger(), "legPoseTarget_(): failed to find IK solution for target!");
+            return;
         }
+        std::vector<double> leg_joints;
+        leg_interface_[legIdx]->getJointValueTarget(leg_joints);
+        leg_joints.insert(leg_joints.begin(), static_cast<double>(legIdx));
+        legJointTarget_(leg_joints);
             
         loadCurrentRobotState_(legIdx);
         to_target_dist = std::sqrt(std::pow(endEffector_x_[legIdx] - x, 2) + 
@@ -260,15 +246,6 @@ private:
         }
         RCLCPP_INFO(get_logger(), "legSetPoseTarget_(): current end effector (i, x, y, z) = (%zu, %lf, %lf, %lf)",
                     legIdx, endEffector_x_[legIdx], endEffector_y_[legIdx], endEffector_z_[legIdx]);    
-
-        /*
-        for (std::size_t legIdx = 0; legIdx < legN ; legIdx++) {
-        	all_legs_move_plan_.push_back(endEffector_pose_[legIdx]);
-        	all_legs_endEffector_links_.push_back(endEffector_link_[legIdx]);
-        }
-        all_legs_interface_->setPoseTargets(all_legs_move_plan_, all_legs_endEffector_links_);
-        all_legs_interface_->move();
-        */
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void handleGetState_(const std::shared_ptr<std_srvs::srv::Trigger::Request> /*request*/,
@@ -482,8 +459,6 @@ private:
     rclcpp::Subscription<ros_string>  ::SharedPtr leg_named_subscriber_;
     rclcpp::Subscription<ros_array>   ::SharedPtr leg_joint_subscriber_;
     rclcpp::Subscription<custom_array>::SharedPtr leg_pose_subscriber_;
-    double cartesianConstraintStepsize_          = 0.001;     // meter
-    double cartesianConstraintFractionThreshold_ = 1.0;
     double to_target_dist       = 0;
     double to_target_dist_thres = 0.01;
 
