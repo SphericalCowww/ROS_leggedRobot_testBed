@@ -402,11 +402,13 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
     ros2 topic pub -1 /leg_set_joint example_interfaces/msg/Float64MultiArray "{data: [0, 3.14, 3.14, 3.54]}"
     ros2 topic pub -1 /leg_set_pose my_robot_interface/msg/CubicDoggoLegPoseTarget "{leg_index: 0, x: -0.092, y: 0.053, z: 0.135}" 
 
-So far, the robot is able to stand up, but with much effort:
+Here is the standing post:
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs4.png" width="400">
 
+Here is the standing action:
 
+[Video demo](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/standAction0_4Leg.mp4)
 
 
 
