@@ -40,7 +40,7 @@ Derivation from the following <a href="https://github.com/SphericalCowww/ROS_ini
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="500"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystemPhoto.png" width="200">
 
-When testing, the 11.1V battery can be teed to power both Raspberry Pi 5 and 3 servos. However, rasp pi 5 does show low power when also turning on the monitor with HDMI connection.
+When testing, the 11.1V battery can be teed to power both rasp pi and 3 servos. However, rasp pi does show low power when also turning on the monitor with HDMI connection.
 
 ### setting the servo IDs
 
@@ -416,6 +416,28 @@ Here is the standing action:
 Here is the simplest walk gait one can implement:
 
 [Video demo](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/walkGait0_4Leg.mp4)
+
+### launch at the start of turning on rasp pi
+
+    chmod +x /home/kali/Documents/ROS_leggedRobot_testBed/start_robot.sh
+    sudo vim /etc/systemd/system/robot_startup.service
+    # filling the following:
+    ## [Unit]
+    ## Description=Cubic Doggo Robot Bringup
+    ## After=network.target
+    ## [Service]
+    ## Type=simple
+    ## User=cubic_doggo
+    ## ExecStart=/home/cubic_doggo/Documents/ROS_leggedRobot_testBed/start_robot.sh
+    ## Restart=on-failure
+    ## RestartSec=5
+    ## [Install]
+    ## WantedBy=multi-user.target
+    sudo systemctl daemon-reload                      # reload whenever there is a change
+    sudo systemctl enable robot_startup.service       # now will start at reboot
+    # sudo systemctl start robot_startup.service        # start right now too
+    # sudo systemctl stop robot_startup.service         # stop right now
+    # sudo systemctl disable robot_startup.service      # disable at reboot
 
 ## References:
 - Guiding Video => AstroSam, I Made a Robot Dog (2024) (<a href="https://www.youtube.com/watch?v=XvKlplncafQ">YouTube</a>)
