@@ -36,8 +36,8 @@ using ros_array    = example_interfaces::msg::Float64MultiArray;
 using custom_array = my_robot_interface::msg::CubicDoggoLegPoseTarget;
 using ros_bool     = example_interfaces::msg::Bool;
 
-const double DEFAULT_VEL_SCALAR = 0.5;
-const double DEFAULT_ACC_SCALAR = 0.1;
+const double DEFAULT_VEL_SCALAR = 0.3;
+const double DEFAULT_ACC_SCALAR = 0.05;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MyRobotLifecycleManager : public rclcpp_lifecycle::LifecycleNode {
@@ -205,6 +205,11 @@ private:
     }
     ///////////
     void legNamedTarget_(const std::string &name) {
+        if (name == "stand") {
+            all_legs_interface_->setNamedTarget("stand_mid");
+            planAndExecute_();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
         all_legs_interface_->setNamedTarget(name);
         planAndExecute_();
     }
@@ -382,6 +387,12 @@ private:
                     }
                 }
             }
+            for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
+                leg_interface_[legIdx]->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+                leg_interface_[legIdx]->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
+            }
+            all_legs_interface_->setMaxVelocityScalingFactor(DEFAULT_VEL_SCALAR);
+            all_legs_interface_->setMaxAccelerationScalingFactor(DEFAULT_ACC_SCALAR);
         }
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
