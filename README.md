@@ -401,6 +401,7 @@ Note, turns out IPTP is not supported by the newest moveit2 by default.
     ros2 topic pub -1 /leg_set_named example_interfaces/msg/String "{data: "sit"}"
     ros2 topic pub -1 /leg_set_joint example_interfaces/msg/Float64MultiArray "{data: [0, 3.14, 3.14, 3.54]}"
     ros2 topic pub -1 /leg_set_pose my_robot_interface/msg/CubicDoggoLegPoseTarget "{leg_index: 0, x: -0.092, y: 0.053, z: 0.135}" 
+    ros2 service call /leg_walk_toggle std_srvs/srv/SetBool "{data: true}"
 
 Here is the standing post:
 
