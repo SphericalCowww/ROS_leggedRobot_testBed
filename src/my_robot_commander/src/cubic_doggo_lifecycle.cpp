@@ -78,13 +78,13 @@ public:
             leg_interface_[legIdx]->setGoalOrientationTolerance(0.1);
             leg_interface_[legIdx]->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
             leg_interface_[legIdx]->setNumPlanningAttempts(10);
-            leg_interface_[legIdx]->setPlanningTime(0.1);
+            leg_interface_[legIdx]->setPlanningTime(1.0);
         }
         all_legs_interface_->setGoalPositionTolerance(0.01);
         all_legs_interface_->setGoalOrientationTolerance(0.1);
         all_legs_interface_->setWorkspace(-1.0, -1.0, -1.0, 1.0, 1.0, 1.0); // world size
         all_legs_interface_->setNumPlanningAttempts(10);
-        all_legs_interface_->setPlanningTime(0.1);
+        all_legs_interface_->setPlanningTime(1.0);
         setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
  
         state_service_ = this->create_service<std_srvs::srv::Trigger>(
@@ -266,23 +266,30 @@ private:
                             std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
         is_walking_ = request->data;
         response->success = true;
-        response->message = is_walking_ ? "Walking started" : "Walking stopped";
+        response->message = is_walking_ ? "walking started" : "walking stopped";
     }
     void walkingLoop_() {
+        bool   initialized = false;
         double maxVelScale = 1.0;
         double maxAccScale = 0.8;
         double stride = 0.04;
         double lift   = 0.03; 
-
-        setDefaultVelAccScaler_(maxVelScale, maxAccScale);
+        
         auto all_legs_robot_model = all_legs_interface_->getRobotModel();
         std::array<double, legN> home_x, home_y, home_z;
         bool home_captured = false;
         while (keep_running_thread_ && rclcpp::ok()) {
-            if (!is_walking_) {
+            if (is_walking_ == false) {
+                initialized = false;
+                home_captured = false;
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
+            } else if (initialized == false) {
+                legNamedTarget_("stand");
+                setDefaultVelAccScaler_(maxVelScale, maxAccScale);
+                initialized = true;
             }
+
             loadCurrentRobotState_();
             if (home_captured == false) {
                 for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
@@ -299,7 +306,6 @@ private:
             for (int gaitPhase = 0; gaitPhase < 2; gaitPhase++) { 
                 moveit::core::RobotStatePtr phase_state = 
                     std::make_shared<moveit::core::RobotState>(*all_legs_current_robot_state_);
-
                 for (std::size_t legIdx = 0; legIdx < legN; legIdx++) {
                     double target_x = home_x[legIdx];
                     double target_y = home_y[legIdx];
@@ -346,9 +352,9 @@ private:
                 gait_waypoints.push_back(phase_state);
             }
             ////////////////
-            
             auto robo_traj = std::make_shared<robot_trajectory::RobotTrajectory>(all_legs_robot_model, 
                                                                                  all_legs_planning_group_);
+            robo_traj->addSuffixWayPoint(*all_legs_current_robot_state_, 0.0);
             for (const auto& state : gait_waypoints) {
                 robo_traj->addSuffixWayPoint(*state, 0.0); 
             }
@@ -384,7 +390,6 @@ private:
                     }
                 }
             }
-            setDefaultVelAccScaler_(DEFAULT_VEL_SCALE, DEFAULT_ACC_SCALE);
         }
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
