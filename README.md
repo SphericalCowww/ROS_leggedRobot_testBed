@@ -1,8 +1,10 @@
 # Testing for Legged Robot using ROS2
 
-Goal: quadruped robot dog up to a simple walk gait
+Goal: quadruped robot dog with 12 DOF up to a simple walk gait.
 
 Derivation from the following <a href="https://github.com/SphericalCowww/ROS_init_practice">GitHub Repository</a>.
+
+The CAD drawings are "hidden" under this  <a href="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/tree/main/src/my_robot_description/mesh/CADv0.1">path</a> for ROS reason.
 
 ## Hardware Connections
 
@@ -14,6 +16,8 @@ Derivation from the following <a href="https://github.com/SphericalCowww/ROS_ini
 | communication/power hub | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/parts/interface/u2d2_power_hub/">U2D2 power hub board</a> | 2 | Operating voltage	3.5-24V withg a maximum current	of 10A |
 | servo motor | DYNAMIXEL <a href="https://emanual.robotis.com/docs/en/dxl/x/xl430-w250/">XL430-W250-T</a> | 12 | Max stall torque: 1.5 N*m (at 12.0V, 1.4A, 1.071 Nm/A) |
 | battery | ZYGY <a href="https://www.amazon.de/dp/B0BB6RMM5Q">11.1V 2000mAh</a> | 2 | already includes protection. Need adapters for: T-plug => XT60 Male => DC 5.5mm x 2.5mm Male | 
+| bearings | standard bearing, threaded rod, rod-end bearing, <a href="https://www.amazon.de/dp/B01M2ZCLKX">spacer</a> | 8, 4, 4, 4 | as long as the dimensions work out together, but the rod length so far is 60mm |
+| bolts and nuts | | | DYNAMIXEL provides most < M3 bolts; use lock nuts; also best to have threaded inserts for 3D-printer materials, but designed choices can get around it |
 |  |  |  |  | 
 | battery | Palogreen <a href="https://www.amazon.de/dp/B0DZ65LMPT">12.6V DC Akku 2800mAh</a> | - | already includes protection. One for powering the rasp pi 5, and several backups | 
 | power supply | SMPS | - | 12V/5A to test 1 leg | 
