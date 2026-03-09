@@ -85,7 +85,7 @@ Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-dow
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly2MainBoard.png" width="300">
 
-Here is the full assembly. Also, update the unnecessary bearing at the connection of the universal bearings. Moreover, be warned that standing up requires specific sequences to prevent overloading the servos; the robot has a total weight of roughly 2kg.
+Here is the full assembly. Also updated the unnecessary bearing at the connection of the universal bearings. The robot has a total weight of roughly 2kg.
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs2.png" width="350">
 
@@ -409,7 +409,7 @@ Here is the standing post:
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs4.png" width="400">
 
-Here is the standing action:
+Here is the standing action. It turns out that with proper leg proportions, the motors are very capable of doing this (consult LLM for proper leg dimensions given the weight and torque):
 
 [Video demo](https://raw.githubusercontent.com/SphericalCowww/ROS_leggedRobot_testBed/main/standAction0_4Leg.mp4)
 
