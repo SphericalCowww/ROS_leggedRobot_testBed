@@ -91,7 +91,7 @@ Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-dow
 
 Here is the full assembly. Also updated the unnecessary bearing at the connection of the universal bearings. The robot has a total weight of roughly 2kg.
 
-<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs2.png" width="350">
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs2.png" width="350"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs3.png" width="200">
 
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
@@ -431,8 +431,8 @@ Here is the simplest walk gait one can implement:
     ## After=network.target
     ## [Service]
     ## Type=simple
-    ## User=cubic_doggo
-    ## ExecStart=/home/cubic_doggo/Documents/ROS_leggedRobot_testBed/start_robot.sh
+    ## User=cubicdoggo
+    ## ExecStart=/home/cubicdoggo/Documents/ROS_leggedRobot_testBed/start_robot.sh
     ## Restart=on-failure
     ## RestartSec=5
     ## [Install]
