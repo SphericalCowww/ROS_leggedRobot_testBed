@@ -44,7 +44,7 @@ The CAD drawings are "hidden" under this  <a href="https://github.com/SphericalC
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystem.png" width="500"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystemPhoto.png" width="200">
 
-When testing, the 11.1V battery can be teed to power both rasp pi and 3 servos. However, rasp pi does show low power when also turning on the monitor with HDMI connection.
+When testing, the 11.1V battery can be teed to power both rasp pi and 3 servos. However, rasp pi does show low power when also turning on the monitor with an HDMI connection.
 
 ### setting the servo IDs
 
@@ -92,6 +92,10 @@ Here is the assembly with the hardware control system: rasp pi 5, DC-DC step-dow
 Here is the full assembly. Also updated the unnecessary bearing at the connection of the universal bearings. The robot has a total weight of roughly 2kg.
 
 <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs1.png" width="300"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs2.png" width="350"> <img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/assembly4Legs3.png" width="200">
+
+Also, since 2 power hubs are used, connecting their grounds together through their "-" PCB screw terminals with a thick wire. At the same time, each power hub also gets a 1000 uF 50V capacitor from its power rail "+" PCB screw terminal to ground.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/powerSystemSharingGround.png" width="200">
 
 ## Installing the <a href="https://github.com/ROBOTIS-GIT/DynamixelSDK">dynamixel-sdk</a> and  <a href="https://github.com/ROBOTIS-GIT/dynamixel-workbench">dynamixel-workbench</a>
 
