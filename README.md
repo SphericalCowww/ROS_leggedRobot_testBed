@@ -119,7 +119,7 @@ Then ``cd ROS_leggedRobot_testBed`` and build,
     colcon build
     source install/setup.bash
 
-Connect U2D2 to Rasp Pi USB port: 
+Connect U2D2 to Rasp Pi USB port. To check if ROS2 sees the servos: 
 
     sudo dmesg | tail -n 20
     # look for:
@@ -127,10 +127,10 @@ Connect U2D2 to Rasp Pi USB port:
     ## usb 2-2: FTDI USB Serial Device converter now attached to ttyUSB0
     ls -l /dev/ttyUSB*
     sudo chmod a+rw /dev/ttyUSB0                   # required everytime after reconnection
-    ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 57600
-    ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 57600 11 0.5
+    ros2 run my_toolbox_dynamixel_workbench model_scan /dev/ttyUSB0 2000000
+    ros2 run my_toolbox_dynamixel_workbench position /dev/ttyUSB0 2000000 11 0.5
 
-Update USB port latency to 1 ms. Note that this USB signal is delicate, use as short and as high quality of the USB cable as possible.: 
+Update USB port latency to 1 ms. Note that this USB signal is delicate; use as short and high-quality a USB cable as possible.: 
 
     lsusb
     # look for: Bus 002 Device 003: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
