@@ -1,10 +1,12 @@
-# Testing for Legged Robot using ROS2
+# Cubic Doggo 05B Dogo: Test Bed for Legged Robot using ROS2
 
 Goal: quadruped robot dog with 12 DOF up to a simple walk gait.
 
 Derivation from the following <a href="https://github.com/SphericalCowww/ROS_init_practice">GitHub Repository</a>.
 
 The CAD drawings are "hidden" under this  <a href="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/tree/main/src/my_robot_description/mesh/CADv0.1">path</a> for ROS reason.
+
+<img src="https://github.com/SphericalCowww/ROS_leggedRobot_testBed/blob/main/CubicDogo.png" width="400">
 
 ## Hardware Connections
 
